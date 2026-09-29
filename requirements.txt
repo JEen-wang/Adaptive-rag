@@ -1,0 +1,24 @@
+# lockfile-friendly extra for environments that do not read pyproject optional-deps
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+pydantic==2.10.4
+pydantic-settings==2.7.0
+httpx==0.28.1
+sqlalchemy==2.0.36
+greenlet==3.2.4
+asyncpg==0.30.0
+aiosqlite==0.20.0
+alembic==1.14.0
+qdrant-client==1.12.1
+redis==5.2.1
+langgraph==0.2.60
+langchain-core==0.3.28
+jieba==0.42.1
+rank-bm25==0.2.2
+orjson==3.10.12
+python-json-logger==3.2.1
+tenacity==9.0.0
+prometheus-client==0.21.1
+sse-starlette==2.2.1
+pytest==8.3.4
+pytest-asyncio==0.24.0

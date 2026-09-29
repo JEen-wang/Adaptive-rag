@@ -1,0 +1,55 @@
+# Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+credentials.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+.eggs/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Local data
+data/local/
+data/*.db
+data/*.sqlite
+*.sqlite3
+output/
+
+# Vector / cache
+.qdrant/
+.redis-dump/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Eval artifacts (keep reports/ tracked templates only)
+eval/reports/*.json
+eval/reports/*.html
+!eval/reports/.gitkeep
+
+# Logs
+logs/
+*.log
