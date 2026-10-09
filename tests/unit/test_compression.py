@@ -7,7 +7,9 @@ from app.schemas.chat import ChatMessage
 
 
 def test_compression_levels_follow_budget_ratios() -> None:
-    settings = Settings(token_budget=1000, compress_soft_ratio=0.5, compress_hard_ratio=0.7, auto_compact_ratio=0.85)
+    settings = Settings(
+        token_budget=1000, compress_soft_ratio=0.5, compress_hard_ratio=0.7, auto_compact_ratio=0.85
+    )
     assert decide_level(100, settings) == CompressionLevel.NONE
     assert decide_level(600, settings) == CompressionLevel.SOFT_TRUNCATE
     assert decide_level(800, settings) == CompressionLevel.HARD_COMPRESS

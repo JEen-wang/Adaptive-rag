@@ -1,3 +1,5 @@
+"""Order, refund and return queries."""
+
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -137,9 +139,7 @@ class OrderRepository:
         return {"order_id": order.order_id, "status": "cancelled"}
 
     async def write_audit(self, trace_id: str, action: str, order_id: str) -> None:
-        self._session.add(
-            AuditLogRow(trace_id=trace_id, action=action, payload=order_id)
-        )
+        self._session.add(AuditLogRow(trace_id=trace_id, action=action, payload=order_id))
 
     async def get_product(self, sku: str) -> Product | None:
         row = await self._session.get(ProductRow, sku)

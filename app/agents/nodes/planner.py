@@ -1,3 +1,5 @@
+"""Planner that turns intent, skills and complexity into tool plans."""
+
 from __future__ import annotations
 
 import re

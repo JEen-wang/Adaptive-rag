@@ -1,3 +1,5 @@
+"""Conversation memory layer."""
+
 from app.memory.budget import decide_level, estimate_tokens
 from app.memory.compression import apply_compression
 

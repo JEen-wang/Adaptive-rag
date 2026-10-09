@@ -1,3 +1,5 @@
+"""Dependency-injection container and runtime composition."""
+
 from __future__ import annotations
 
 import logging
@@ -5,6 +7,8 @@ import logging
 from app.config.settings import Settings
 from app.infra.rate_limit import InMemoryRateLimiter, RedisRateLimiter
 from app.infra.redis_client import connect_redis
+from app.mcp.adapter import merge_mcp_tools
+from app.mcp.runtime import LOCAL_CATALOG
 from app.providers.base import LLMProvider
 from app.providers.deepseek import DeepSeekProvider
 from app.providers.embeddings import build_embedding_provider
@@ -18,8 +22,6 @@ from app.retrieval.reranker import DocumentReranker
 from app.retrieval.vector import VectorRetriever
 from app.services.chat_service import ChatService
 from app.services.seed import seed_demo_data
-from app.mcp.adapter import merge_mcp_tools
-from app.mcp.runtime import LOCAL_CATALOG
 from app.tools.factory import build_tool_registry
 
 logger = logging.getLogger(__name__)
@@ -57,24 +59,22 @@ class AppContainer:
         await self.engine.dispose()
 
 
-async def build_container(settings: Settings, seed: bool = True) -> AppContainer:
-    llm: LLMProvider = (
-        DeepSeekProvider(settings) if settings.llm_configured else FakeLLMProvider()
-    )
-    embedder = build_embedding_provider(settings)
+async def build_infrastructure(settings: Settings):
+    """Create the database session factory and optional Redis connection."""
     engine = create_engine(settings)
     await init_schema(engine)
     session_factory = create_session_factory(engine)
     redis = await connect_redis(settings)
+    return engine, session_factory, redis
+
+
+async def build_retrieval(settings: Settings, redis):
+    """Build the knowledge ingestion and hybrid retrieval components."""
+    embedder = build_embedding_provider(settings)
     cache = (
         RedisRetrievalCache(redis, ttl_seconds=settings.retrieval_cache_ttl_seconds)
         if redis is not None
         else MemoryRetrievalCache(ttl_seconds=settings.retrieval_cache_ttl_seconds)
-    )
-    rate_limiter = (
-        RedisRateLimiter(redis, limit=settings.rate_limit_per_minute)
-        if redis is not None
-        else InMemoryRateLimiter(limit=settings.rate_limit_per_minute)
     )
     bm25, store, _ = await ingest_knowledge(
         settings.knowledge_dir,
@@ -85,12 +85,22 @@ async def build_container(settings: Settings, seed: bool = True) -> AppContainer
         embedding_dim=getattr(embedder, "dim", settings.embedding_dim),
     )
     retriever = HybridRetriever(
-        bm25,
-        VectorRetriever(store, embedder),
-        rrf_k=settings.rrf_k,
-        cache=cache,
+        bm25, VectorRetriever(store, embedder), rrf_k=settings.rrf_k, cache=cache
     )
     reranker = DocumentReranker(CrossEncoderRerankProvider(settings))
+    return retriever, reranker, store
+
+
+async def build_container(settings: Settings, seed: bool = False) -> AppContainer:
+    """Compose runtime services from independently testable infrastructure builders."""
+    llm: LLMProvider = DeepSeekProvider(settings) if settings.llm_configured else FakeLLMProvider()
+    engine, session_factory, redis = await build_infrastructure(settings)
+    rate_limiter = (
+        RedisRateLimiter(redis, limit=settings.rate_limit_per_minute)
+        if redis is not None
+        else InMemoryRateLimiter(limit=settings.rate_limit_per_minute)
+    )
+    retriever, reranker, store = await build_retrieval(settings, redis)
     registry = build_tool_registry(retriever)
     if settings.mcp_enabled:
         specs = list(LOCAL_CATALOG)

@@ -1,3 +1,5 @@
+"""Redis connection helper with graceful degradation."""
+
 from __future__ import annotations
 
 import logging

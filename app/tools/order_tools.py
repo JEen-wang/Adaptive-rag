@@ -1,3 +1,5 @@
+"""Order tools: order and item lookup."""
+
 from pydantic import BaseModel, Field
 
 from app.core.enums import ToolRisk

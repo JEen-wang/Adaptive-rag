@@ -1,3 +1,5 @@
+"""Torch device selection for local models."""
+
 from __future__ import annotations
 
 

@@ -1,3 +1,5 @@
+"""Idempotency-key storage for write operations."""
+
 import json
 
 from sqlalchemy.ext.asyncio import AsyncSession

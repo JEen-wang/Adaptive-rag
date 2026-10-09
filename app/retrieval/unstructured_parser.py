@@ -1,3 +1,5 @@
+"""Unstructured parsing for PDF/Office/HTML/images with a Markdown fallback."""
+
 from __future__ import annotations
 
 import logging

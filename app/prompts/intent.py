@@ -1,3 +1,5 @@
+"""Intent classification prompt."""
+
 PROMPT_VERSION = "intent_v3"
 
 INTENT_SYSTEM_V1 = """你是意图分类器。只输出 JSON。

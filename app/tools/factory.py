@@ -1,3 +1,5 @@
+"""Tool registry construction."""
+
 from app.retrieval.hybrid import HybridRetriever
 from app.tools.aftersale_tools import (
     CancelOrderTool,
@@ -5,7 +7,12 @@ from app.tools.aftersale_tools import (
     CreateReturnRequestTool,
     GetRefundStatusTool,
 )
-from app.tools.knowledge_tools import EscalateToHumanTool, GetCouponTool, GetWarrantyTool, SearchKnowledgeTool
+from app.tools.knowledge_tools import (
+    EscalateToHumanTool,
+    GetCouponTool,
+    GetWarrantyTool,
+    SearchKnowledgeTool,
+)
 from app.tools.logistics_tools import TrackShipmentTool
 from app.tools.order_tools import GetOrderItemsTool, GetOrderTool
 from app.tools.product_tools import (

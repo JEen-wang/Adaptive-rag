@@ -1,3 +1,5 @@
+"""Faithfulness self-check prompt."""
+
 FAITHFULNESS_SYSTEM = """你检测客服回答是否忠实于证据。只输出 JSON。
 supported：回答中的事实是否都能在证据或工具结果中找到
 hallucinated_spans：不被支持的短语

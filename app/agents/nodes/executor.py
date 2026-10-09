@@ -1,3 +1,5 @@
+"""Tool execution node with argument fallback and retries."""
+
 from __future__ import annotations
 
 import hashlib
@@ -6,7 +8,12 @@ import time
 
 from app.agents.state import AgentState
 from app.config.settings import Settings
-from app.core.exceptions import AppError, InvalidRequestError, ToolExecutionError, ToolPermissionError
+from app.core.exceptions import (
+    AppError,
+    InvalidRequestError,
+    ToolExecutionError,
+    ToolPermissionError,
+)
 from app.core.request_scope import get_db_session
 from app.observability.metrics import TOOL_CALLS
 from app.repositories.idempotency import IdempotencyRepository
@@ -33,7 +40,9 @@ READ_FALLBACKS: dict[str, list[str]] = {
 
 
 def _fingerprint(tool_name: str, arguments: dict) -> str:
-    payload = json.dumps({"tool": tool_name, "arguments": arguments}, sort_keys=True, ensure_ascii=False)
+    payload = json.dumps(
+        {"tool": tool_name, "arguments": arguments}, sort_keys=True, ensure_ascii=False
+    )
     return hashlib.sha256(payload.encode()).hexdigest()
 
 
@@ -67,7 +76,9 @@ async def execute_with_fallback(
                 continue
             fallback = registry.get(fallback_name)
             try:
-                fb_result = await fallback.run(fallback_arguments(fallback_name, step, query), context)
+                fb_result = await fallback.run(
+                    fallback_arguments(fallback_name, step, query), context
+                )
                 if fb_result.success:
                     merged = {
                         **fb_result.output,
@@ -106,7 +117,10 @@ async def executor_node(
     calls = 0
     query = state["user_query"]
     for step in plan.steps:
-        if calls >= settings.max_tool_calls or (state.get("step_count") or 0) >= settings.max_agent_steps:
+        if (
+            calls >= settings.max_tool_calls
+            or (state.get("step_count") or 0) >= settings.max_agent_steps
+        ):
             break
         if not step.tool_name:
             continue
@@ -121,7 +135,9 @@ async def executor_node(
                     existing = await idempotency.get_if_matches(idem_key, fp)
                     if existing is not None:
                         results.append(
-                            ToolResult(name=tool.name, success=True, output=existing, risk=tool.risk)
+                            ToolResult(
+                                name=tool.name, success=True, output=existing, risk=tool.risk
+                            )
                         )
                         TOOL_CALLS.labels(tool=tool.name, status="idempotent").inc()
                         calls += 1

@@ -1,3 +1,5 @@
+"""Admin routes for tool and skill introspection."""
+
 import hmac
 
 from fastapi import APIRouter, Depends, Request

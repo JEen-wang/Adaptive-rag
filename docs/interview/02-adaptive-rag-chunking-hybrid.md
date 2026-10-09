@@ -2,11 +2,11 @@
 
 > 对应简历句：**检索阶段：FAQ、退货策略、配送说明等文档进行预处理、切分、向量化索引。基于 Adaptive-RAG 实现科学感知的逻辑路由，动态调度检索策略，并通过问题改写和混合检索，解决多跳问题。**
 >
-> 用法：每个问题先给 **30 秒开口**，再给对照仓库的详细答案。数字只引用 [`eval/MEASURED.md`](../eval/MEASURED.md)（2026-08-22）。行为只写代码里真实存在的；没做的会标明。
+> 用法：每个问题先给 **30 秒开口**，再给对照仓库的详细答案。数字只引用 [`eval/MEASURED.md`](../../eval/MEASURED.md)（2026-08-22）。行为只写代码里真实存在的；没做的会标明。
 >
 > **用词：** 「科学感知」对应论文里的 **query complexity-aware**（按问题复杂度选策略），不是「感知科学领域」。答辩时主动改口。
 >
-> 配套：[04 Adaptive-RAG](04-adaptive-rag.md) · [15 解析切块](15-ingest-and-retrieval.md) · [10 评测](10-evaluation.md) · [14 测评报告](14-evaluation-report.md) · [13 面试稿](13-interview-engineering-rag.md) · [面试1](面试1)（状态机 / 意图）
+> 配套：[04 Adaptive-RAG](../04-adaptive-rag.md) · [15 解析切块](../15-ingest-and-retrieval.md) · [10 评测](../10-evaluation.md) · [14 测评报告](../14-evaluation-report.md) · [13 面试稿](../13-interview-engineering-rag.md) · [面试1](01-langgraph-planning-intent.md)（状态机 / 意图）
 
 ## 本章目录
 
@@ -547,4 +547,4 @@ Prompt：`app/prompts/complexity.py`。枚举：`app/core/enums.py`。
 
 ---
 
-上一份 [面试1 · 状态机与意图](面试1) · 机制正文 [04](04-adaptive-rag.md) · [15](15-ingest-and-retrieval.md)
+上一份 [面试1 · 状态机与意图](01-langgraph-planning-intent.md) · 机制正文 [04](../04-adaptive-rag.md) · [15](../15-ingest-and-retrieval.md)

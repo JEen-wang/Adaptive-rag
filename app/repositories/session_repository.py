@@ -1,3 +1,5 @@
+"""Conversation session and message persistence."""
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 

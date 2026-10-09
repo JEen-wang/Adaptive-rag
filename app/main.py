@@ -1,6 +1,8 @@
+"""Application factory: lifespan wiring and FastAPI app creation."""
+
+import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-import logging
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -24,6 +26,7 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    """Build the container on startup and release it on shutdown."""
     settings = get_settings()
     configure_logging(settings)
     container = await build_container(settings)
@@ -35,6 +38,19 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
+    """Create the FastAPI application.
+
+    Registers the routers under ``api_v1_prefix``, installs request-scoped
+    context, and maps application errors to the stable JSON error envelope.
+
+    Args:
+        settings: Optional settings override; when omitted the cached settings
+            are used. Passing an explicit value clears the settings cache first,
+            which is what tests rely on.
+
+    Returns:
+        A fully wired FastAPI application with the container bound in ``lifespan``.
+    """
     if settings is not None:
         from app.config.settings import clear_settings_cache
 
@@ -89,7 +105,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def unhandled_handler(request: Request, exc: Exception) -> JSONResponse:
         if isinstance(exc, StarletteHTTPException):
             return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
-        logger.exception("unhandled_error", extra={"trace_id": getattr(request.state, "trace_id", "-")})
+        logger.exception(
+            "unhandled_error", extra={"trace_id": getattr(request.state, "trace_id", "-")}
+        )
         body = APIErrorBody(
             error_code=ErrorCode.INTERNAL_ERROR,
             message="internal error",

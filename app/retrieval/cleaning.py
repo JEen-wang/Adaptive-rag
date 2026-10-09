@@ -1,3 +1,5 @@
+"""Text normalisation, near-duplicate detection and PII redaction."""
+
 from __future__ import annotations
 
 import hashlib
@@ -92,9 +94,7 @@ def dedupe_chunks(
         seen[digest] = chunk.chunk_id
         kept.append(chunk)
 
-    fingerprints = [
-        (chunk.document_id, chunk.chunk_id, simhash64(chunk.content)) for chunk in kept
-    ]
+    fingerprints = [(chunk.document_id, chunk.chunk_id, simhash64(chunk.content)) for chunk in kept]
     for index, (doc_a, chunk_a, hash_a) in enumerate(fingerprints):
         for doc_b, chunk_b, hash_b in fingerprints[index + 1 :]:
             if doc_a == doc_b:

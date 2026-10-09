@@ -1,3 +1,5 @@
+"""Answer generation and refusal nodes."""
+
 from __future__ import annotations
 
 import json
@@ -37,7 +39,9 @@ async def generate_node(state: AgentState, llm: LLMProvider) -> dict:
             "refused": False,
             "latency": latency,
         }
-    evidence = "\n\n".join(f"[{c.chunk_id}] {c.title}\n{c.content}" for c in chunks[:6]) or "(无检索结果)"
+    evidence = (
+        "\n\n".join(f"[{c.chunk_id}] {c.title}\n{c.content}" for c in chunks[:6]) or "(无检索结果)"
+    )
     tool_text = json.dumps([t.model_dump() for t in tools], ensure_ascii=False) if tools else "(无)"
     intent = state.get("intent")
     strategy = state.get("strategy") or RetrievalStrategy.DIRECT

@@ -1,3 +1,5 @@
+"""Stable machine-readable error codes."""
+
 from enum import Enum
 
 

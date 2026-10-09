@@ -1,3 +1,5 @@
+"""BM25 lexical retriever over a jieba-tokenised inverted index."""
+
 from __future__ import annotations
 
 from collections import defaultdict

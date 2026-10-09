@@ -1,15 +1,17 @@
+"""Document retrieval node."""
+
 from __future__ import annotations
 
 import time
 
 from app.agents.state import AgentState
 from app.config.settings import Settings
+from app.core.enums import RetrievalStrategy
 from app.retrieval.hybrid import HybridRetriever
 from app.retrieval.query_rewrite import QueryRewriter
 from app.retrieval.reranker import DocumentReranker
 from app.retrieval.self_rag import SelfRAGLoop
 from app.schemas.common import LatencyBreakdown
-from app.core.enums import RetrievalStrategy
 
 
 async def retrieval_node(

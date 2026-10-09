@@ -1,3 +1,5 @@
+"""LangGraph state machine that wires the agent nodes together."""
+
 from __future__ import annotations
 
 from collections.abc import Callable

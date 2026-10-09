@@ -1,3 +1,5 @@
+"""Agent planning, intent, complexity and tool-result schemas."""
+
 from typing import Any
 
 from pydantic import BaseModel, Field

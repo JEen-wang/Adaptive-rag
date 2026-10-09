@@ -43,7 +43,10 @@ def high_precision_intent(query: str) -> IntentLabel | None:
         return IntentLabel.HUMAN_HANDOFF
     if _GREETING_ONLY.match(text) or _GREETING_ONLY.match(lowered):
         return IntentLabel.GREETING
-    if text in {"今天天气真好", "你是机器人吗", "讲个笑话", "你叫什么名字", "在忙什么"} or "吃什么" in text:
+    if (
+        text in {"今天天气真好", "你是机器人吗", "讲个笑话", "你叫什么名字", "在忙什么"}
+        or "吃什么" in text
+    ):
         return IntentLabel.CHITCHAT
     if any(token in text for token in _COMPLAINT):
         return IntentLabel.COMPLAINT
@@ -59,19 +62,46 @@ def high_precision_intent(query: str) -> IntentLabel | None:
         return IntentLabel.FAQ_POLICY
     if "积分怎么用" in text:
         return IntentLabel.FAQ_POLICY
-    if "积分能抵" in text or any(token in text for token in ("优惠券", "NEW10", "新客券", "包邮券")):
+    if "积分能抵" in text or any(
+        token in text for token in ("优惠券", "NEW10", "新客券", "包邮券")
+    ):
         return IntentLabel.COUPON
     if "满减和包邮" in text:
         return IntentLabel.COUPON
     if "怎么算" in text or "运费谁出" in text or "拆封了还能退吗" in text:
         return IntentLabel.FAQ_POLICY
-    if any(token in text for token in ("开发票", "电子发票", "花呗", "客服工作时间", "保修多久", "满59", "偏远地区", "新疆包邮", "签收后怎么验货", "人为损坏", "进水能修")):
+    if any(
+        token in text
+        for token in (
+            "开发票",
+            "电子发票",
+            "花呗",
+            "客服工作时间",
+            "保修多久",
+            "满59",
+            "偏远地区",
+            "新疆包邮",
+            "签收后怎么验货",
+            "人为损坏",
+            "进水能修",
+        )
+    ):
         return IntentLabel.FAQ_POLICY
-    if "质量问题怎么退款" in text or "退款什么时候" in text or "申请退款" in text or "退款进度" in text:
+    if (
+        "质量问题怎么退款" in text
+        or "退款什么时候" in text
+        or "申请退款" in text
+        or "退款进度" in text
+    ):
         return IntentLabel.REFUND
     if "原路返回" in text or "要退" in text and "钱" in text:
         return IntentLabel.REFUND
-    if any(token in text for token in _RETURN) or "还能退吗" in text or "能退货吗" in text or "七天无理由吗" in text:
+    if (
+        any(token in text for token in _RETURN)
+        or "还能退吗" in text
+        or "能退货吗" in text
+        or "七天无理由吗" in text
+    ):
         return IntentLabel.RETURN_EXCHANGE
     if any(token in text for token in _RECOMMEND):
         return IntentLabel.RECOMMENDATION

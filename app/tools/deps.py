@@ -1,3 +1,5 @@
+"""Repository-backed tool base."""
+
 from app.core.request_scope import get_db_session
 from app.repositories.order_repository import OrderRepository
 

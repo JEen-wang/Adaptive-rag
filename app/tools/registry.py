@@ -1,3 +1,5 @@
+"""Tool registry and dispatch."""
+
 from __future__ import annotations
 
 from app.core.exceptions import InvalidRequestError

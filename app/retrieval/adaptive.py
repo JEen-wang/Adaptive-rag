@@ -14,9 +14,9 @@ from __future__ import annotations
 
 import re
 
+from app.core.constants import PROMPT_VERSION_COMPLEXITY
 from app.core.enums import IntentLabel, QueryComplexity, RetrievalStrategy
 from app.core.exceptions import LLMOutputError, LLMProviderError
-from app.core.constants import PROMPT_VERSION_COMPLEXITY
 from app.prompts.complexity import COMPLEXITY_SYSTEM, COMPLEXITY_USER
 from app.providers.base import LLMProvider
 from app.providers.json_parser import parse_model
@@ -65,14 +65,19 @@ def rule_based_complexity(query: str, intent: IntentResult) -> ComplexityResult:
             confidence=0.9,
             rationale="social_or_greeting",
         )
-    if intent.label in {
-        IntentLabel.ORDER_INQUIRY,
-        IntentLabel.LOGISTICS,
-        IntentLabel.REFUND,
-        IntentLabel.RETURN_EXCHANGE,
-        IntentLabel.CANCEL_ORDER,
-        IntentLabel.HUMAN_HANDOFF,
-    } or _ORDER_ID.search(text) or any(cue in text for cue in _TOOL_CUES):
+    if (
+        intent.label
+        in {
+            IntentLabel.ORDER_INQUIRY,
+            IntentLabel.LOGISTICS,
+            IntentLabel.REFUND,
+            IntentLabel.RETURN_EXCHANGE,
+            IntentLabel.CANCEL_ORDER,
+            IntentLabel.HUMAN_HANDOFF,
+        }
+        or _ORDER_ID.search(text)
+        or any(cue in text for cue in _TOOL_CUES)
+    ):
         return ComplexityResult(
             complexity=QueryComplexity.TOOL_REQUIRED,
             strategy=RetrievalStrategy.AGENT,

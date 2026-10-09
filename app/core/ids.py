@@ -1,3 +1,5 @@
+"""Identifier and trace-id generation."""
+
 import uuid
 
 

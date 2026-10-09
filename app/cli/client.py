@@ -1,107 +1,33 @@
-"""Interactive terminal chat.
+"""Interactive terminal chat client.
 
-One process, keep asking. If http://127.0.0.1:8000 is already up, reuse it;
-otherwise load the engine in this process (first start is slow).
-
-    python -m app.cli
+One process, keep asking. If the API is already up at ``base_url`` it is reused;
+otherwise the engine is loaded in this process, which is slow on first start.
 """
 
 from __future__ import annotations
 
-import argparse
-import ast
 import asyncio
 import json
-import sys
 from collections.abc import AsyncIterator
 from typing import Any
 
 import httpx
 
+from app.cli.render import HELP, apply_event, emit, format_meta, parse_sse_data_line
 from app.core.ids import new_trace_id
 from app.schemas.chat import ChatRequest
 
 DEFAULT_BASE = "http://127.0.0.1:8000"
 DEFAULT_USER = "u_demo"
-NODE_LABELS = {
-    "apply_guardrail": "护栏",
-    "classify_intent": "意图",
-    "route_complexity": "路由",
-    "retrieve_docs": "检索",
-    "plan_tasks": "规划",
-    "execute_tools": "执行",
-    "generate_answer": "生成",
-    "refuse_answer": "拒答",
-    "check_faithfulness": "忠实度",
-    "compact_memory": "记忆",
-}
-HELP = """直接输入问题，回车后等待回答，然后可以继续问。
-  /help  命令说明
-  /new   新开会话
-  /y     确认写操作（退款/取消等）
-  /n     忽略待确认
-  /quit  退出
-演示单：ORD10001 已发货耳机 · ORD10002 已签收定制杯 · ORD10003 未发货 T 恤
-"""
 
 
 class ChatFailed(Exception):
     """One turn failed; the REPL should keep running."""
 
 
-def parse_sse_data_line(line: str) -> dict[str, Any] | None:
-    stripped = line.strip()
-    if not stripped.startswith("data:"):
-        return None
-    payload = stripped[5:].strip()
-    if not payload or payload == "[DONE]":
-        return None
-    try:
-        parsed: Any = json.loads(payload)
-    except json.JSONDecodeError:
-        try:
-            parsed = ast.literal_eval(payload)
-        except (SyntaxError, ValueError):
-            return None
-    return parsed if isinstance(parsed, dict) else None
-
-
-def format_meta(body: dict[str, Any]) -> str:
-    bits = [
-        body.get("intent") or "-",
-        body.get("strategy") or "-",
-        body.get("complexity") or "-",
-    ]
-    total = (body.get("latency") or {}).get("total_ms")
-    if isinstance(total, (int, float)):
-        bits.append(f"{total / 1000:.1f}s")
-    return " · ".join(str(item) for item in bits)
-
-
-def _print(text: str) -> None:
-    sys.stdout.write(text)
-    sys.stdout.flush()
-
-
-def _apply_event(event: dict[str, Any], *, show_tokens: bool, printed_nodes: bool) -> tuple[dict[str, Any] | None, bool]:
-    kind = event.get("event")
-    if kind == "node":
-        node = str(event.get("node") or "")
-        label = NODE_LABELS.get(node, node)
-        prefix = "" if printed_nodes else "  "
-        _print(f"{prefix}[{label}]")
-        return None, True
-    if kind == "token" and show_tokens:
-        _print(str(event.get("text") or ""))
-        return None, printed_nodes
-    if kind == "answer":
-        data = event.get("data")
-        if isinstance(data, dict):
-            return data, printed_nodes
-    return None, printed_nodes
-
-
 class ChatCli:
+    """Stateful REPL client that talks to the API or an in-process engine."""
+
     def __init__(
         self,
         *,
@@ -125,6 +51,7 @@ class ChatCli:
         self._container = None
 
     async def setup(self) -> str:
+        """Connect to a running API, or start the engine in-process, and return a banner."""
         if not self._force_local and await self._api_up():
             self._http = httpx.AsyncClient(timeout=self._timeout)
             return f"已连接 {self._base}。在这个终端里连续提问即可，/quit 退出。"
@@ -144,12 +71,14 @@ class ChatCli:
             return False
 
     async def aclose(self) -> None:
+        """Release the HTTP client or the in-process container."""
         if self._http is not None:
             await self._http.aclose()
         if self._container is not None:
             await self._container.aclose()
 
     async def chat(self, message: str, *, confirm: str | None = None) -> dict[str, Any]:
+        """Send one turn and return the answer body."""
         if self._container is not None:
             return await self._chat_local(message, confirm=confirm)
         return await self._chat_http(message, confirm=confirm)
@@ -201,13 +130,13 @@ class ChatCli:
         answer: dict[str, Any] | None = None
         printed = False
         async for event in events:
-            maybe, printed = _apply_event(
+            maybe, printed = apply_event(
                 event, show_tokens=self._show_tokens, printed_nodes=printed
             )
             if maybe is not None:
                 answer = maybe
         if printed:
-            _print("\n")
+            emit("\n")
         if answer is None:
             raise ChatFailed("这一轮没有拿到完整回答，请再试一次。")
         return answer
@@ -219,10 +148,13 @@ class ChatCli:
             body = {"answer": response.text, "error_code": "BAD_RESPONSE"}
         if response.status_code >= 400:
             message = body.get("message") or body.get("answer") or response.text
-            raise ChatFailed(f"请求失败 [{body.get('error_code') or response.status_code}]: {message}")
+            raise ChatFailed(
+                f"请求失败 [{body.get('error_code') or response.status_code}]: {message}"
+            )
         return body
 
     def render(self, body: dict[str, Any]) -> None:
+        """Print one answer body and track session and pending-action state."""
         self._session_id = body.get("session_id") or self._session_id
         pending = body.get("pending_action")
         if isinstance(pending, dict) and pending.get("action_id"):
@@ -248,6 +180,7 @@ class ChatCli:
         print()
 
     async def loop(self) -> None:
+        """Run the read-eval-print loop until the user quits."""
         banner = await self.setup()
         print(f"Adaptive-RAG  user={self._user_id}")
         print(banner)
@@ -294,39 +227,3 @@ class ChatCli:
                 print(f"\n出错了：{exc}\n")
                 continue
             self.render(body)
-
-
-def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Adaptive-RAG 终端连续对话")
-    parser.add_argument("--base-url", default=DEFAULT_BASE, help="已有 API 地址")
-    parser.add_argument("--user-id", default=DEFAULT_USER)
-    parser.add_argument("--local", action="store_true", help="强制本进程启动引擎，不连已有 API")
-    parser.add_argument("--no-stream", action="store_true")
-    parser.add_argument("--tokens", action="store_true", help="打印生成增量")
-    parser.add_argument("--timeout", type=float, default=120.0)
-    return parser
-
-
-async def _amain(argv: list[str] | None) -> int:
-    args = build_parser().parse_args(argv)
-    cli = ChatCli(
-        user_id=args.user_id,
-        stream=not args.no_stream,
-        show_tokens=args.tokens,
-        timeout=args.timeout,
-        base_url=args.base_url,
-        local=args.local,
-    )
-    try:
-        await cli.loop()
-    finally:
-        await cli.aclose()
-    return 0
-
-
-def main(argv: list[str] | None = None) -> int:
-    return asyncio.run(_amain(argv))
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

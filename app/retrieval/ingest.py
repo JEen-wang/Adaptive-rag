@@ -1,3 +1,5 @@
+"""Knowledge-base ingestion into BM25 and the vector store."""
+
 from __future__ import annotations
 
 import asyncio

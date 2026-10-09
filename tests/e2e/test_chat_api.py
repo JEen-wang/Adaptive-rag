@@ -59,7 +59,11 @@ def test_chat_stream_emits_token_and_node_events() -> None:
     assert "token" in joined or "node" in joined
     assert "done" in joined
     data_lines = [line[5:].strip() for line in payloads if line.startswith("data:")]
-    parsed = [json.loads(line) for line in data_lines if line and line != "[DONE]" and line.startswith("{")]
+    parsed = [
+        json.loads(line)
+        for line in data_lines
+        if line and line != "[DONE]" and line.startswith("{")
+    ]
     assert any(item.get("event") == "answer" for item in parsed)
 
 

@@ -53,3 +53,13 @@ eval/reports/*.html
 # Logs
 logs/
 *.log
+
+# AI assistant / editor workspace metadata
+.workbuddy-ai/
+.tmpcmp/
+.cursor/
+.aider*
+
+# Local scratch
+*.tmp
+scratch/

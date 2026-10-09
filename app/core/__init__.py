@@ -1,3 +1,5 @@
+"""Shared core primitives."""
+
 from app.core.enums import (
     CompressionLevel,
     IntentLabel,

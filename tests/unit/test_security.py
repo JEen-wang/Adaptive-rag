@@ -3,10 +3,7 @@ from app.core.security import mask_pii, redact_mapping
 
 
 def test_mask_phone_id_bank_and_order() -> None:
-    text = (
-        "联系 13812345678 身份证 11010119900307123X "
-        "卡号 6222021234567890 订单 ORD1234567"
-    )
+    text = "联系 13812345678 身份证 11010119900307123X " "卡号 6222021234567890 订单 ORD1234567"
     masked = mask_pii(text)
     assert "13812345678" not in masked
     assert f"138{PII_MASK}5678" in masked

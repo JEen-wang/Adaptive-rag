@@ -1,3 +1,5 @@
+"""Logistics tools: shipment tracking."""
+
 from pydantic import BaseModel, Field
 
 from app.core.enums import ToolRisk

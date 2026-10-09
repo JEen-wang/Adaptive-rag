@@ -1,3 +1,5 @@
+"""UTC time helpers."""
+
 from datetime import UTC, datetime
 
 

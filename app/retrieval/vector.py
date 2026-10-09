@@ -1,3 +1,5 @@
+"""Vector stores and dense retrieval over embedded chunks."""
+
 from __future__ import annotations
 
 import asyncio
@@ -150,7 +152,9 @@ class QdrantVectorStore:
 
 
 class VectorRetriever:
-    def __init__(self, store: InMemoryVectorStore | QdrantVectorStore, embedder: EmbeddingProvider) -> None:
+    def __init__(
+        self, store: InMemoryVectorStore | QdrantVectorStore, embedder: EmbeddingProvider
+    ) -> None:
         self.store = store
         self.embedder = embedder
 
@@ -171,4 +175,7 @@ def build_records(
 ) -> list[VectorRecord]:
     if len(chunks) != len(embeddings):
         raise ValueError("chunk / embedding length mismatch")
-    return [VectorRecord(chunk=chunk, embedding=embedding) for chunk, embedding in zip(chunks, embeddings)]
+    return [
+        VectorRecord(chunk=chunk, embedding=embedding)
+        for chunk, embedding in zip(chunks, embeddings, strict=False)
+    ]

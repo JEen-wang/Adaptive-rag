@@ -1,3 +1,5 @@
+"""Product tools: search, detail, recommendation and inventory."""
+
 from pydantic import BaseModel, Field
 
 from app.core.enums import ToolRisk

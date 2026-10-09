@@ -2,7 +2,11 @@ import pytest
 
 from app.config.settings import Settings
 from app.core.exceptions import LLMProviderError
-from app.providers.embeddings import BgeM3EmbeddingProvider, HashEmbeddingProvider, build_embedding_provider
+from app.providers.embeddings import (
+    BgeM3EmbeddingProvider,
+    HashEmbeddingProvider,
+    build_embedding_provider,
+)
 
 
 class _FakeSentenceTransformer:

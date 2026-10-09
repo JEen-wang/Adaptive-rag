@@ -1,3 +1,5 @@
+"""Query complexity classification prompt."""
+
 COMPLEXITY_SYSTEM = """你是 Adaptive-RAG 复杂度分类器。只输出 JSON。
 complexity 取值：simple, single_hop, multi_hop, tool_required, out_of_scope
 strategy 取值：direct, single, multi, agent, refuse

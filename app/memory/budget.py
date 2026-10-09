@@ -1,3 +1,5 @@
+"""Token budget estimation and compression-level decisions."""
+
 from __future__ import annotations
 
 from app.config.settings import Settings

@@ -1,3 +1,5 @@
+"""FastAPI dependency providers."""
+
 from fastapi import Request
 
 from app.services.container import AppContainer

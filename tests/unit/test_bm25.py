@@ -1,12 +1,24 @@
+from app.core.enums import DocumentCategory
 from app.retrieval.bm25 import BM25Retriever
 from app.retrieval.chunking import chunk_markdown, stable_chunk_id
-from app.core.enums import DocumentCategory
 
 
 def test_chunk_ids_are_stable() -> None:
     text = "## A\n\nhello world\n\n## B\n\nsecond section about returns"
-    once = chunk_markdown(text, document_id="return_policy", title="t", category=DocumentCategory.RETURN_POLICY, source="x")
-    twice = chunk_markdown(text, document_id="return_policy", title="t", category=DocumentCategory.RETURN_POLICY, source="x")
+    once = chunk_markdown(
+        text,
+        document_id="return_policy",
+        title="t",
+        category=DocumentCategory.RETURN_POLICY,
+        source="x",
+    )
+    twice = chunk_markdown(
+        text,
+        document_id="return_policy",
+        title="t",
+        category=DocumentCategory.RETURN_POLICY,
+        source="x",
+    )
     assert [c.chunk_id for c in once] == [c.chunk_id for c in twice]
     assert once[0].chunk_id == stable_chunk_id("return_policy", 0)
 

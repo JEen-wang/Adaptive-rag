@@ -1,4 +1,4 @@
-from datetime import datetime
+"""Retrieved chunk and citation schemas."""
 
 from pydantic import BaseModel, Field
 

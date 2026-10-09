@@ -1,3 +1,5 @@
+"""Request-scoped context variables for logs and traces."""
+
 from contextvars import Token
 
 from app.observability.logging import request_id_var, trace_id_var

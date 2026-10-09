@@ -1,6 +1,6 @@
+from app.core.enums import DocumentCategory
 from app.retrieval.fusion import reciprocal_rank_fusion
 from app.schemas.retrieval import RetrievedChunk
-from app.core.enums import DocumentCategory
 
 
 def _chunk(chunk_id: str, rank: int) -> RetrievedChunk:

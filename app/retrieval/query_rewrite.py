@@ -1,3 +1,5 @@
+"""Query rewriting for multi-hop and ambiguous queries."""
+
 from __future__ import annotations
 
 from app.core.exceptions import LLMOutputError, LLMProviderError

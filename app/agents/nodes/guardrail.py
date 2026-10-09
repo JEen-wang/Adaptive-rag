@@ -1,3 +1,5 @@
+"""Input guardrail node for injection and scope checks."""
+
 from app.agents.state import AgentState
 from app.core.enums import RetrievalStrategy
 from app.core.exceptions import GuardrailError

@@ -1,3 +1,5 @@
+"""Hybrid retriever fusing BM25 and dense vectors with RRF."""
+
 from __future__ import annotations
 
 import logging

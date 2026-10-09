@@ -1,6 +1,7 @@
-from datetime import datetime, timedelta
+"""Demo data seeding."""
 
-from sqlalchemy import select
+from datetime import timedelta
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.enums import OrderStatus

@@ -1,10 +1,10 @@
 """Offline eval harness for resume-quantifiable metrics.
 
-  python -m eval.runner --task all --llm
-  python -m eval.runner --task intent --llm
-  python -m eval.runner --task retrieval
-  python -m eval.runner --task generation --llm
-  python -m eval.runner --task e2e --llm
+python -m eval.runner --task all --llm
+python -m eval.runner --task intent --llm
+python -m eval.runner --task retrieval
+python -m eval.runner --task generation --llm
+python -m eval.runner --task e2e --llm
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ import argparse
 import asyncio
 import json
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from eval.metrics import (
@@ -316,7 +316,9 @@ async def eval_generation() -> dict:
         nonlocal naive_hallucinated, rag_hallucinated, checked_hallucinated
         async with semaphore:
             chunks = await retriever.retrieve(row["query"], top_k=5)
-            evidence = "\n\n".join(f"[{c.chunk_id}] {c.content}" for c in chunks[:6]) or "(无检索结果)"
+            evidence = (
+                "\n\n".join(f"[{c.chunk_id}] {c.content}" for c in chunks[:6]) or "(无检索结果)"
+            )
             naive = await _generate_answer(llm, row["query"], "(无检索结果)")
             rag = await _generate_answer(llm, row["query"], evidence)
             naive_judge = await checker.check(
@@ -540,7 +542,7 @@ def _resume_bullets(report: dict) -> list[str]:
 
 async def run_all(*, llm: bool) -> dict:
     report: dict = {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "intent_rules": eval_intent_rules(),
         "intent_overlay": eval_intent_overlay(),
         "retrieval": await eval_retrieval(),
@@ -587,7 +589,7 @@ def main() -> None:
 
     report = asyncio.run(_go())
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     path = REPORT_DIR / f"{args.task}_{stamp}.json"
     latest = REPORT_DIR / "latest.json"
     text = json.dumps(report, ensure_ascii=False, indent=2)

@@ -1,6 +1,8 @@
+"""Shared API response primitives."""
+
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from app.core.error_codes import ErrorCode
 

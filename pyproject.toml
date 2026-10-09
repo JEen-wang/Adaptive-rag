@@ -68,4 +68,21 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
-ignore = ["E501"]
+ignore = [
+    "E501",
+    # FastAPI 惯用法：依赖注入写在参数默认值里，B008 属误报。
+    "B008",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# 测试里断言“任意异常”是常见写法。
+"tests/**" = ["B017"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "eval"]
+combine-as-imports = true

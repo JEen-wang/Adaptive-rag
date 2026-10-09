@@ -1,3 +1,5 @@
+"""Knowledge tools: policy search, coupons, warranty and escalation."""
+
 from pydantic import BaseModel, Field
 
 from app.core.enums import ToolRisk

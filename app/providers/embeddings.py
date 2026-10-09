@@ -1,7 +1,10 @@
+"""Embedding providers: local BGE, hash fallback and OpenAI-compatible API."""
+
 from __future__ import annotations
 
 import asyncio
 import hashlib
+import importlib.util
 import logging
 import math
 import struct
@@ -104,9 +107,7 @@ class BgeM3EmbeddingProvider:
                 return self._model
             if self._load_error is not None:
                 return None
-            try:
-                from sentence_transformers import SentenceTransformer
-            except ImportError:
+            if importlib.util.find_spec("sentence_transformers") is None:
                 self._load_error = "sentence-transformers missing; pip install -e '.[rerank]'"
                 logger.warning("local_embedding_sdk_missing")
                 return None
@@ -156,7 +157,7 @@ class BgeM3EmbeddingProvider:
         )
         if hasattr(raw, "tolist"):
             raw = raw.tolist()
-        if raw and isinstance(raw[0], (int, float)):
+        if raw and isinstance(raw[0], int | float):
             return [[float(value) for value in raw]]
         return [[float(value) for value in row] for row in raw]
 

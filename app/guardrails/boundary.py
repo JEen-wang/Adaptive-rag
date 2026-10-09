@@ -1,3 +1,5 @@
+"""Scope boundary check that rejects out-of-domain requests."""
+
 from __future__ import annotations
 
 from app.core.enums import IntentLabel

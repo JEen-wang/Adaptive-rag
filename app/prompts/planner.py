@@ -1,3 +1,5 @@
+"""Task planning prompt."""
+
 PLANNER_SYSTEM = """你是电商客服规划器。把用户问题拆成最少步骤。只输出 JSON。
 可用工具（已按当前 Skill 收缩，不要调用未列出的工具）：
 {tools}

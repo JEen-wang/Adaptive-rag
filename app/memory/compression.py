@@ -39,7 +39,9 @@ def compress_tool_results(
     return compressed
 
 
-def sliding_window(messages: list[ChatMessage], *, keep: int = KEEP_RECENT_TURNS) -> list[ChatMessage]:
+def sliding_window(
+    messages: list[ChatMessage], *, keep: int = KEEP_RECENT_TURNS
+) -> list[ChatMessage]:
     if len(messages) <= keep * 2:
         return list(messages)
     return list(messages[-(keep * 2) :])

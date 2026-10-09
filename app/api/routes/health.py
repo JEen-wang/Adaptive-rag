@@ -1,3 +1,5 @@
+"""Liveness and readiness probes."""
+
 from fastapi import APIRouter, Depends
 
 from app.api.dependencies import get_container

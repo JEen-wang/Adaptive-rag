@@ -38,7 +38,9 @@ async def test_self_correct_rewrites_unsupported_answer() -> None:
     )
     from app.guardrails.hallucination import FaithfulnessResult
 
-    first = FaithfulnessResult(supported=False, hallucinated_spans=["随时退"], rationale="unsupported")
+    first = FaithfulnessResult(
+        supported=False, hallucinated_spans=["随时退"], rationale="unsupported"
+    )
     answer, judged, corrected = await self_correct_answer(
         llm=llm,
         checker=checker,

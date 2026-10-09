@@ -1,3 +1,5 @@
+"""DeepSeek chat-completion provider."""
+
 from __future__ import annotations
 
 import json
@@ -99,7 +101,9 @@ class DeepSeekProvider:
                 completion_tokens=int(usage_raw.get("completion_tokens") or 0),
                 total_tokens=int(usage_raw.get("total_tokens") or 0),
             )
-            return LLMResponse(content=content or "", usage=usage, model=self._settings.deepseek_model)
+            return LLMResponse(
+                content=content or "", usage=usage, model=self._settings.deepseek_model
+            )
 
         return await with_exponential_backoff(
             _call,
@@ -164,4 +168,3 @@ class DeepSeekProvider:
             raise LLMProviderError("DeepSeek stream timed out", timeout=True) from exc
         except httpx.HTTPError as exc:
             raise LLMProviderError("DeepSeek stream transport error") from exc
-

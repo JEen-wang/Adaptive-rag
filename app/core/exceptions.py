@@ -1,3 +1,5 @@
+"""Application exception hierarchy."""
+
 from app.core.error_codes import ErrorCode
 
 

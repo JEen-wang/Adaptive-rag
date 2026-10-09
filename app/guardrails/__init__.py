@@ -1,3 +1,5 @@
+"""Guardrail layer."""
+
 from app.guardrails.boundary import assert_in_scope
 from app.guardrails.injection import detect_prompt_injection
 

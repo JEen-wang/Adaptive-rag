@@ -6,7 +6,7 @@ so it stays schema-validated and testable.
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from app.config.settings import Settings
 from app.core.exceptions import LLMOutputError, LLMProviderError

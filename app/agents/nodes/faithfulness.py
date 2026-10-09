@@ -1,14 +1,16 @@
+"""Self-RAG faithfulness check and answer self-correction."""
+
 from __future__ import annotations
 
 from app.agents.nodes.generate import AnswerPayload, _extractive_fallback
 from app.agents.state import AgentState
+from app.core.exceptions import LLMOutputError, LLMProviderError
 from app.guardrails.hallucination import FaithfulnessChecker, FaithfulnessResult
 from app.observability.metrics import HALLUCINATION_FLAGS
 from app.prompts.faithfulness import SELF_CORRECT_SYSTEM, SELF_CORRECT_USER
 from app.providers.base import LLMProvider
 from app.providers.json_parser import parse_model
 from app.schemas.retrieval import RetrievedChunk
-from app.core.exceptions import LLMOutputError, LLMProviderError
 
 
 async def self_correct_answer(
@@ -22,7 +24,9 @@ async def self_correct_answer(
     first_result: FaithfulnessResult,
 ) -> tuple[str, FaithfulnessResult, bool]:
     """LLM rewrite once, then extractive fallback. Returns (answer, judge, corrected)."""
-    evidence = "\n\n".join(f"[{c.chunk_id}] {c.title}\n{c.content}" for c in chunks[:6]) or "(无检索结果)"
+    evidence = (
+        "\n\n".join(f"[{c.chunk_id}] {c.title}\n{c.content}" for c in chunks[:6]) or "(无检索结果)"
+    )
     try:
         response = await llm.generate(
             [
@@ -32,7 +36,8 @@ async def self_correct_answer(
                     "content": SELF_CORRECT_USER.format(
                         query=query,
                         answer=answer,
-                        critique=first_result.rationale or ",".join(first_result.hallucinated_spans),
+                        critique=first_result.rationale
+                        or ",".join(first_result.hallucinated_spans),
                         evidence=evidence,
                         tool_results=tool_results_text or "(无)",
                     ),
@@ -63,7 +68,9 @@ async def self_correct_answer(
     return patched, judged, True
 
 
-async def faithfulness_node(state: AgentState, checker: FaithfulnessChecker, llm: LLMProvider) -> dict:
+async def faithfulness_node(
+    state: AgentState, checker: FaithfulnessChecker, llm: LLMProvider
+) -> dict:
     answer = state.get("final_answer") or ""
     if state.get("refused") or state.get("pending_action"):
         return {}

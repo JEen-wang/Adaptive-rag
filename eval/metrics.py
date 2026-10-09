@@ -1,3 +1,5 @@
+"""Offline evaluation metrics: accuracy, precision/recall@k, MRR and latency percentiles."""
+
 from __future__ import annotations
 
 from collections import defaultdict

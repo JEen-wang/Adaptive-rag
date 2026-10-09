@@ -1,3 +1,5 @@
+"""Document reranking over fused retrieval results."""
+
 from __future__ import annotations
 
 from app.providers.base import RerankProvider

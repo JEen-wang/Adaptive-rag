@@ -1,3 +1,5 @@
+"""Markdown chunking with stable chunk identifiers."""
+
 from __future__ import annotations
 
 import hashlib

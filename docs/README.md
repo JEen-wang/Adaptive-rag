@@ -34,10 +34,10 @@
 | Docker | [11](11-deployment.md) | `docker-compose.yml` |
 | 写掘金/面试长文 | [13](13-interview-engineering-rag.md) | 对照仓库的「玩具 vs 工程化」 |
 | 八股对照本仓库 | [16](16-interview-bagu-map.md) | 八股方法 ↔ 代码路径 |
-| 答辩：状态机 / 规划 / 意图 / 97% | [面试1](面试1) | 逐题开口 + 对照代码 |
-| 答辩：Adaptive-RAG / 切分 / Hybrid / 多跳 | [面试2](面试2) | 逐题开口 + 对照代码 |
-| 答辩：精排口径 / 记忆 / Skill·MCP / 护栏 | [面试3](面试3) | 含 Cohere 改口与数字口径 |
-| 三篇合并 | [面试问答全集.md](面试问答全集.md) · [PDF](../output/pdf/面试问答全集.pdf) | 开口 + 详细答案 |
+| 答辩：状态机 / 规划 / 意图 / 97% | [面试 01](interview/01-langgraph-planning-intent.md) | 逐题开口 + 对照代码 |
+| 答辩：Adaptive-RAG / 切分 / Hybrid / 多跳 | [面试 02](interview/02-adaptive-rag-chunking-hybrid.md) | 逐题开口 + 对照代码 |
+| 答辩：精排口径 / 记忆 / Skill·MCP / 护栏 | [面试 03](interview/03-rerank-memory-skill-mcp.md) | 含数字口径 |
+| 三篇合并 | [面试问答全集](interview/04-full-collection.md) | 开口 + 详细答案 |
 
 ## 章节
 
@@ -57,10 +57,10 @@
 14. [测评报告](14-evaluation-report.md)（数据集、消融、口径陷阱）
 15. [解析、切块、向量化与检索](15-ingest-and-retrieval.md)
 16. [八股对照本仓库](16-interview-bagu-map.md)
-17. [面试问答：LangGraph / 规划执行 / 意图 / 97%](面试1)
-18. [面试问答：Adaptive-RAG / 切分索引 / Hybrid / 多跳](面试2)
-19. [面试问答：精排口径 / 记忆 / Skill·MCP / 护栏](面试3)
-20. [面试问答全集（三篇合并）](面试问答全集.md) · [PDF](../output/pdf/面试问答全集.pdf)
+17. [面试问答：LangGraph / 规划执行 / 意图 / 97%](interview/01-langgraph-planning-intent.md)
+18. [面试问答：Adaptive-RAG / 切分索引 / Hybrid / 多跳](interview/02-adaptive-rag-chunking-hybrid.md)
+19. [面试问答：精排口径 / 记忆 / Skill·MCP / 护栏](interview/03-rerank-memory-skill-mcp.md)
+20. [面试问答全集（三篇合并）](interview/04-full-collection.md)
 
 ## 仓库地图
 
@@ -90,3 +90,16 @@ docs/             本手册
 ```text
 HTTP → ChatService → LangGraph → Retriever 或 Tool → Provider / DB
 ```
+
+
+## 系统化工程教程
+
+面向"从零讲清一个可运行的多智能体 RAG 客服系统"的成体系教程，共 13 个部分：
+
+- [教学教程总目录](tutorial/README.md)
+
+配套材料：
+
+- [Adaptive-RAG 工程化教学路线](00-engineering-tutorial.md)（单篇速览）
+- [项目架构图与运行流程](17-architecture-flow.md)
+- [教学文档写作蓝图](18-teaching-doc-blueprint.md)（施工图，供后续扩写参考）

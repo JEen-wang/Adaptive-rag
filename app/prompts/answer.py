@@ -1,3 +1,5 @@
+"""Answer generation prompt."""
+
 from app.core.constants import UNTRUSTED_CONTEXT_BANNER
 
 ANSWER_SYSTEM = f"""你是电商平台客服助手。用简体中文回答，语气克制、可执行。

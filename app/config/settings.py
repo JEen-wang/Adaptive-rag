@@ -1,3 +1,5 @@
+"""Environment-backed settings with a cached accessor."""
+
 from functools import lru_cache
 from typing import Literal
 
@@ -107,9 +109,7 @@ class Settings(BaseSettings):
 
         Tests stay on markdown heading split unless UNSTRUCTURED_FORCE is set.
         """
-        return self.unstructured_enabled and (
-            self.app_env != "testing" or self.unstructured_force
-        )
+        return self.unstructured_enabled and (self.app_env != "testing" or self.unstructured_force)
 
     @property
     def redis_configured(self) -> bool:

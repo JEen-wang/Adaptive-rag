@@ -1,3 +1,5 @@
+"""MCP integration layer."""
+
 from app.mcp.adapter import merge_mcp_tools
 from app.mcp.runtime import LOCAL_CATALOG
 

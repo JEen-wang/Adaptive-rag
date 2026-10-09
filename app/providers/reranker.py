@@ -1,3 +1,5 @@
+"""Rerank providers: local Cross-Encoder and lexical fallback."""
+
 from __future__ import annotations
 
 import asyncio

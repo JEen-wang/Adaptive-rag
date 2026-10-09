@@ -1,3 +1,5 @@
+"""Chat orchestration: graph execution, streaming and persistence."""
+
 from __future__ import annotations
 
 import asyncio

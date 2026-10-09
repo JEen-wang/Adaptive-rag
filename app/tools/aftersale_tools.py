@@ -1,3 +1,5 @@
+"""After-sale tools: refund, return and order cancellation."""
+
 from pydantic import BaseModel, Field
 
 from app.core.enums import ToolRisk

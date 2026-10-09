@@ -1,3 +1,5 @@
+"""Shared agent state passed between graph nodes."""
+
 from typing import Any, TypedDict
 
 from app.core.enums import QueryComplexity, RetrievalStrategy

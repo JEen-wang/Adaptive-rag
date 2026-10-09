@@ -1,3 +1,5 @@
+"""LLM-backed conversation summarisation."""
+
 from app.core.exceptions import LLMOutputError, LLMProviderError
 from app.prompts.summary import SUMMARY_SYSTEM, SUMMARY_USER
 from app.providers.base import LLMProvider

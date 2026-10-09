@@ -1,7 +1,8 @@
+"""Tool permission checks by risk level."""
+
 from app.core.enums import ToolRisk
 from app.core.exceptions import ToolPermissionError
 from app.tools.base import Tool
-
 
 WRITE_RISKS = {ToolRisk.WRITE, ToolRisk.DESTRUCTIVE}
 

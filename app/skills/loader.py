@@ -1,3 +1,5 @@
+"""Skill loading and matching."""
+
 from __future__ import annotations
 
 import json

@@ -1,3 +1,5 @@
+"""Intent classification: rule fast path plus LLM classifier."""
+
 from __future__ import annotations
 
 from app.agents.nodes.intent_overlay import apply_intent_overlay

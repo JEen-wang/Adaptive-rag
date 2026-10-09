@@ -1,3 +1,5 @@
+"""Tool layer."""
+
 from app.tools.factory import build_tool_registry
 from app.tools.registry import ToolRegistry
 
