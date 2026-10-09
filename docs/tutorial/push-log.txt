@@ -46,3 +46,12 @@ PARENT|12-工程化与上线|第十二部分 · 工程化与上线|GyBNwEzi4iOy7
 CHILD|12-工程化与上线|00-说明|MVPBdtjXoormwkxXFMMcLCgmneb
 CHILD|12-工程化与上线|01-可靠性与降级|O5VMd0mTMoCNGbxFjAVcM1vbnKf
 CHILD|12-工程化与上线|02-可观测性|DKBedDVw2okgzSx7iWwcaAgHnvd
+CHILD|12-工程化与上线|03-部署与上线|Dt9Bd6IPiobMftx2cdDcDzSqn7g
+PARENT|13-附录|附录|Eb9JwapZtiolEik6GYRcf40MnWe
+CHILD|13-附录|00-说明|Waqydv5jtom373xV03QcfcfHnoF
+CHILD|13-附录|01-术语表|E5p0d1lKVoJRMixp2ABcqipunRg
+CHILD|13-附录|02-环境变量|Rs1ndzmFgod8WIxtFT3cLMOdnye
+CHILD|13-附录|03-练习答案|CR8vdYGimo4rkexKapOcjnzonBj
+CHILD|13-附录|04-源码阅读顺序|LfqzdpDiwoqKs9xzjK0cvGMnnsf
+CHILD|13-附录|05-完整测评数据表|OBjLdjaQ1oYw50x3BuzcXr3WnLd
+ALL_DONE
