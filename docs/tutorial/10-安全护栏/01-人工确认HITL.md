@@ -138,3 +138,7 @@ def _fingerprint(tool_name: str, arguments: dict) -> str:
 - 第二项是**解释原则**。读者应说明为什么确认令牌必须在服务端校验，而不是写进提示词。
 
 > **指标回指。** 本篇对应的指标是第 11 部分"评测体系"中的工具路径准确率与端到端延迟。在 16 条端到端用例中，`e15` 的取消订单走了人工确认流程，系统返回了待确认动作但并未真正取消，这正是 HITL 生效的证据。读者在阅读下一篇时，可以对照理解输入输出两侧的护栏如何协同。
+
+---
+
+**本篇涉及的源码：** `app/agents/nodes/planner.py`、`app/agents/nodes/executor.py`、`app/tools/permissions.py`、`app/repositories/order_repository.py`

@@ -142,3 +142,7 @@ def reciprocal_rank_fusion(
 - **解释设计。** 读者应说明为什么 RRF 只看名次而不看分数，这样做规避了什么问题。
 
 本篇对应的指标是第 11 部分"评测体系"中的检索 Precision@1 与 MRR。融合本身在本评测集上不带来额外增益，它的作用是为精排准备一个统一的候选列表。读者在阅读下一篇时，可以对照理解增益究竟来自哪一步。
+
+---
+
+**本篇涉及的源码：** `app/retrieval/fusion.py`、`app/retrieval/hybrid.py`

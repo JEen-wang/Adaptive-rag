@@ -174,3 +174,7 @@
 - **核对模型名。** 读者应在简历中检查精排模型的写法，确认它是 `bge-reranker-base` 而不是 Cohere。
 
 本篇对应的指标是第 11 部分"评测体系"中的检索 Precision@1、Recall@3 与 MRR。Hybrid 加精排的 **89.2% / 97.7% / 0.94** 是本项目检索链路的最优成绩，也是简历中最值得写的一组数字。读者在阅读第 11 部分时，可以对照完整消融表理解每一步的贡献。
+
+---
+
+**本篇涉及的源码：** `app/retrieval/reranker.py`、`app/providers/reranker.py`
