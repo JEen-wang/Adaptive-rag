@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 340" width="1200" height="340" role="img" aria-label="Adaptive-RAG 多智能体电商客服">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#080D18"/>
+      <stop offset="52%" stop-color="#101C31"/>
+      <stop offset="100%" stop-color="#080D18"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="35%" stop-color="#A78BFA"/>
+      <stop offset="70%" stop-color="#34D399"/>
+      <stop offset="100%" stop-color="#FBBF24"/>
+    </linearGradient>
+    <linearGradient id="rule" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#7DD3FC" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#A78BFA" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="-8%" r="78%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.30"/>
+      <stop offset="60%" stop-color="#6366F1" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#38BDF8" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse">
+      <circle cx="1.6" cy="1.6" r="1.6" fill="#7DD3FC" fill-opacity="0.10"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="340" rx="18" fill="url(#bg)"/>
+  <rect width="1200" height="340" rx="18" fill="url(#dots)"/>
+  <rect width="1200" height="340" rx="18" fill="url(#glow)"/>
+  <rect x="0.75" y="0.75" width="1198.5" height="338.5" rx="18" fill="none" stroke="#1E3A5F" stroke-width="1.5"/>
+  <rect x="18" y="0" width="1164" height="3" rx="1.5" fill="url(#bar)"/>
+
+  <text x="600" y="78" text-anchor="middle" fill="#7DD3FC" font-size="14" font-weight="600"
+        letter-spacing="3.2"
+        font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Courier New', monospace">ADAPTIVE-RAG · MULTI-AGENT E-COMMERCE SERVICE</text>
+
+  <text x="600" y="150" text-anchor="middle" fill="#F8FAFC" font-size="48" font-weight="800"
+        font-family="'PingFang SC', 'Microsoft YaHei', ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif">Adaptive-RAG 多智能体电商客服</text>
+
+  <rect x="540" y="170" width="120" height="4" rx="2" fill="url(#rule)"/>
+
+  <text x="600" y="210" text-anchor="middle" fill="#94A3B8" font-size="20"
+        font-family="'PingFang SC', 'Microsoft YaHei', ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif">按问题复杂度选择检索策略，而不是对所有 query 做一次 top-k 向量检索</text>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Courier New', monospace" font-size="14" font-weight="600" text-anchor="middle">
+    <rect x="140" y="240" width="172" height="44" rx="22" fill="#38BDF8" fill-opacity="0.12" stroke="#38BDF8" stroke-opacity="0.40"/>
+    <text x="226" y="268" fill="#7DD3FC">DIRECT · 直答</text>
+
+    <rect x="327" y="240" width="172" height="44" rx="22" fill="#34D399" fill-opacity="0.12" stroke="#34D399" stroke-opacity="0.40"/>
+    <text x="413" y="268" fill="#6EE7B7">SINGLE · 单跳</text>
+
+    <rect x="514" y="240" width="172" height="44" rx="22" fill="#A78BFA" fill-opacity="0.12" stroke="#A78BFA" stroke-opacity="0.40"/>
+    <text x="600" y="268" fill="#C4B5FD">MULTI · 多跳</text>
+
+    <rect x="701" y="240" width="172" height="44" rx="22" fill="#FBBF24" fill-opacity="0.12" stroke="#FBBF24" stroke-opacity="0.40"/>
+    <text x="787" y="268" fill="#FCD34D">AGENT · 工具</text>
+
+    <rect x="888" y="240" width="172" height="44" rx="22" fill="#F87171" fill-opacity="0.12" stroke="#F87171" stroke-opacity="0.40"/>
+    <text x="974" y="268" fill="#FCA5A5">REFUSE · 拒答</text>
+  </g>
+
+  <text x="600" y="318" text-anchor="middle" fill="#64748B" font-size="13"
+        font-family="'PingFang SC', 'Microsoft YaHei', ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif">实测 2026-08-22 · 所有数字以 eval/MEASURED.md 为准</text>
+</svg>
