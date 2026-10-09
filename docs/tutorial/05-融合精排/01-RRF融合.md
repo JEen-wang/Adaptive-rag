@@ -72,6 +72,47 @@ BM25 的分数没有上界。它由词频与逆文档频率计算而来，理论
 
 `app/retrieval/fusion.py` 中的 `reciprocal_rank_fusion` 接收若干已排序的候选列表，对每个列表按名次累加 `1 / (k + rank)`，得到每个切片的融合分，再按融合分从高到低排序。
 
+`app/retrieval/fusion.py` —— `reciprocal_rank_fusion`
+
+```python
+"""Reciprocal Rank Fusion.
+
+RRF(d) = sum_i 1 / (k + rank_i(d))
+
+k=60 is the original Cormack, Clarke, Buettcher default. We use rank rather
+than raw scores because BM25 and cosine are not on the same scale.
+Duplicate chunk_ids are merged; first-seen metadata wins, scores are fused.
+"""
+
+# ...
+
+def reciprocal_rank_fusion(
+    ranked_lists: list[list[RetrievedChunk]],
+    *,
+    k: int = DEFAULT_RRF_K,
+) -> list[RetrievedChunk]:
+    if k <= 0:
+        raise ValueError("RRF k must be positive")
+    scores: dict[str, float] = {}
+    canonical: dict[str, RetrievedChunk] = {}
+    for ranked in ranked_lists:
+        for rank_position, chunk in enumerate(ranked, start=1):
+            scores[chunk.chunk_id] = scores.get(chunk.chunk_id, 0.0) + 1.0 / (k + rank_position)
+            if chunk.chunk_id not in canonical:
+                canonical[chunk.chunk_id] = chunk.model_copy(deep=True)
+    fused = []
+    for chunk_id, score in sorted(scores.items(), key=lambda item: item[1], reverse=True):
+        chunk = canonical[chunk_id]
+        chunk.score = score
+        chunk.source = "rrf"
+        fused.append(chunk)
+    for index, chunk in enumerate(fused, start=1):
+        chunk.rank = index
+    return fused
+```
+
+`reciprocal_rank_fusion` 先对每一路按名次累加 `1.0 / (k + rank_position)`，同一个 `chunk_id` 的分数因此叠加。它用 `canonical` 只保留每个切片第一次出现的副本，随后按融合分降序写出结果，并把 `source` 标为 `rrf`、按序重写 `rank`。
+
 代码里有一处细节值得留意：它用一个 `canonical` 字典保存每个 `chunk_id` 第一次出现时的切片对象。当同一个切片被两路同时召回时，系统只保留一条，但融合分累加。
 
 > 两路都命中的切片会获得更高的融合分，这是 RRF 奖励"多路共识"的体现。

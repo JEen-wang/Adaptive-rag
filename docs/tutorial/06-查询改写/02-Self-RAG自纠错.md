@@ -45,13 +45,78 @@
 - 然后把新命中的切片并入累积结果；
 - 最后调用评分器 `_grade`，判断证据是否足够。如果足够，循环提前结束。
 
+`app/retrieval/self_rag.py` —— `SelfRAGLoop.retrieve`
+
+```python
+    async def retrieve(
+        self,
+        query: str,
+        *,
+        top_k: int,
+    ) -> list[RetrievedChunk]:
+        accumulated: dict[str, RetrievedChunk] = {}
+        current_query = query
+        missing = ""
+        for _hop in range(self._settings.max_retrieval_hops):
+            rewritten = await self._rewriter.rewrite(current_query, missing_aspect=missing)
+            hop_query = rewritten[0]
+            candidates = await self._retriever.retrieve(hop_query, top_k=top_k)
+            reranked = await self._reranker.rerank(
+                hop_query, candidates, top_n=self._settings.rerank_top_n
+            )
+            for chunk in reranked:
+                accumulated[chunk.chunk_id] = chunk
+            grade = await self._grade(query, list(accumulated.values()))
+            if grade.sufficient:
+                break
+            missing = grade.missing_aspect or "more specific policy conditions"
+            current_query = query
+        return list(accumulated.values())[: self._settings.rerank_top_n * 2]
+```
+
+`retrieve` 以 `accumulated` 字典累积切片，循环上限是 `max_retrieval_hops`。每一跳它先把 `missing` 交给改写器，用改写后的首条查询检索并精排，再调用 `_grade`；若 `grade.sufficient` 为真则 `break`，否则用 `grade.missing_aspect` 更新缺失维度进入下一跳。
+
 评分器的输出是一个结构化的 `GradeResult`，它包含三个字段。
 
 - `relevant` 表示证据是否相关；
 - `sufficient` 表示证据是否足够；
 - `missing_aspect` 表示还缺哪个方面。
 
+`app/retrieval/self_rag.py` —— `GradeResult`
+
+```python
+class GradeResult(BaseModel):
+    relevant: bool
+    sufficient: bool
+    missing_aspect: str = ""
+    rationale: str = ""
+```
+
+`GradeResult` 用 pydantic 定义评分结果，`relevant` 与 `sufficient` 是布尔判定，`missing_aspect` 默认空串用于携带"还缺什么"，`rationale` 默认空串用于记录理由。
+
 项目把自反思实现成结构化 JSON，而不是某种特殊 token，原因是 JSON 可以被 schema 校验，也便于测试。
+
+`app/retrieval/self_rag.py` —— `SelfRAGLoop._grade`
+
+```python
+    async def _grade(self, query: str, chunks: list[RetrievedChunk]) -> GradeResult:
+        evidence = "\n\n".join(f"[{c.chunk_id}] {c.content}" for c in chunks[:6]) or "(empty)"
+        try:
+            response = await self._llm.generate(
+                [
+                    {"role": "system", "content": GRADE_SYSTEM},
+                    {"role": "user", "content": GRADE_USER.format(query=query, evidence=evidence)},
+                ],
+                temperature=0.0,
+                max_tokens=256,
+                response_format={"type": "json_object"},
+            )
+            return parse_model(response.content, GradeResult)
+        except (LLMProviderError, LLMOutputError):
+            return GradeResult(relevant=bool(chunks), sufficient=bool(chunks), rationale="fallback")
+```
+
+`_grade` 取前 6 条切片拼成证据文本，用 `json_object` 格式让模型评分并解析为 `GradeResult`。当调用失败或输出无法解析时，它退回 `GradeResult(relevant=bool(chunks), sufficient=bool(chunks), rationale="fallback")`，即只要累积证据非空就判为足够。
 
 > 当评分调用失败时，系统退回一个保守判断：只要累积证据非空，就认为足够，从而避免循环空转。
 

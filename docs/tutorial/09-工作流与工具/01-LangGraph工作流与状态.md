@@ -30,6 +30,34 @@
 
 > 这条规则来自 LangGraph 的实现约束。读者在阅读代码时如果不理解这一点，会觉得节点命名有些别扭。
 
+`app/agents/graph.py` —— `build_graph` 的节点注册
+
+```python
+    graph = StateGraph(AgentState)
+    graph.add_node("apply_guardrail", guardrail_node)
+    graph.add_node("classify_intent", partial(intent_node, classifier=classifier))
+    graph.add_node("route_complexity", partial(router_node, router=adaptive))
+    graph.add_node(
+        "retrieve_docs",
+        partial(
+            retrieval_node,
+            retriever=retriever,
+            reranker=reranker,
+            rewriter=rewriter,
+            self_rag=self_rag,
+            settings=settings,
+        ),
+    )
+    graph.add_node("plan_tasks", partial(planner_node, planner=planner))
+    graph.add_node("execute_tools", partial(executor_node, registry=registry, settings=settings))
+    graph.add_node("generate_answer", partial(generate_node, llm=llm))
+    graph.add_node("refuse_answer", refuse_node)
+    graph.add_node("check_faithfulness", partial(faithfulness_node, checker=checker, llm=llm))
+    graph.add_node("compact_memory", partial(memory_node, settings=settings, summarizer=summarizer))
+```
+
+`build_graph` 先用 `StateGraph(AgentState)` 建图，再逐个调用 `add_node` 注册节点。每个节点都通过 `functools.partial` 把依赖（检索器、规划器、工具注册表等）绑定进节点函数，这样节点本身只需接收状态，依赖在编译期就已固定。节点名（如 `classify_intent`）与状态字段名（`intent`）刻意区分，正是为了避开 LangGraph 的命名约束。
+
 ---
 
 ## 三、流程如何流动
@@ -61,6 +89,33 @@
 
 > 这样做避免了为两种检索深度各写一套边与节点，让图保持简洁。
 
+`app/agents/graph.py` —— `build_graph` 的条件边
+
+```python
+    def _after_guardrail(state: AgentState) -> str:
+        return "refuse_answer" if state.get("refused") else "classify_intent"
+
+    graph.add_edge(START, "apply_guardrail")
+    graph.add_conditional_edges(
+        "apply_guardrail",
+        _after_guardrail,
+        {"refuse_answer": "refuse_answer", "classify_intent": "classify_intent"},
+    )
+    graph.add_edge("classify_intent", "route_complexity")
+    graph.add_conditional_edges(
+        "route_complexity",
+        _route_after_complexity,
+        {
+            "generate_answer": "generate_answer",
+            "refuse_answer": "refuse_answer",
+            "retrieve_docs": "retrieve_docs",
+            "plan_tasks": "plan_tasks",
+        },
+    )
+```
+
+条件边由 `add_conditional_edges` 注册，它接收三个参数：源节点、判定函数、以及"返回值到目标节点"的映射表。`_after_guardrail` 读取状态的 `refused` 字段决定去向，`_route_after_complexity` 则把路由结果映射到 `retrieve_docs` 或 `plan_tasks` 等节点。两条 `add_edge` 是普通边，分别固定 `START` 到护栏、以及意图节点到复杂度节点。
+
 ---
 
 ## 四、状态如何设计
@@ -70,6 +125,38 @@
 `app/agents/state.py` 中的 `AgentState` 是一个 `TypedDict`，它定义了流程中流转的全部数据。
 
 这些字段包括查询、意图、策略、检索切片、计划、工具结果、待确认动作、最终答案、引用、token 用量与延迟分段等。每个节点读取它需要的字段，返回它更新的字段。
+
+`app/agents/state.py` —— `AgentState`
+
+```python
+class AgentState(TypedDict, total=False):
+    """LangGraph state. Partial updates replace listed keys; no infinite append reducer.
+
+    Messages are compressed explicitly in the memory node instead of Annotated[add]
+    so the graph cannot silently blow the 128k budget.
+    """
+
+    trace_id: str
+    session_id: str
+    user_id: str
+    user_query: str
+    messages: list[ChatMessage]
+    summary: str
+    intent: IntentResult | None
+    complexity: ComplexityResult | None
+    strategy: RetrievalStrategy | None
+    # ...
+    final_answer: str | None
+    citations: list[Citation]
+    refused: bool
+    error: str | None
+    step_count: int
+    token_usage: TokenUsage
+    latency: LatencyBreakdown
+    extra: dict[str, Any]
+```
+
+`AgentState` 继承自 `TypedDict` 并声明 `total=False`，因此所有键都是可选的，节点只需返回自己更新的那部分。类文档字符串明确写下了设计取舍：消息在记忆节点里被显式压缩，而不是用 `Annotated[add]` 自动追加，以免图在长会话里无声地撑爆 128k 预算。
 
 ### 4.2 替换而非追加
 

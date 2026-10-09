@@ -55,11 +55,63 @@
 
 `CrossEncoderRerankProvider.rerank` 把查询与每条文档拼成 `(query, document)` 对，批量送入模型打分，再按分数重排。
 
+`app/providers/reranker.py` —— `CrossEncoderRerankProvider.rerank`
+
+```python
+    async def rerank(
+        self,
+        query: str,
+        documents: list[str],
+        *,
+        top_n: int,
+    ) -> list[tuple[int, float]]:
+        model = self._ensure_model()
+        if model is None:
+            return await self._fallback.rerank(query, documents, top_n=top_n)
+        pairs = [(query, document) for document in documents]
+        scores = await asyncio.to_thread(self._predict, model, pairs)
+        ranked = sorted(enumerate(scores), key=lambda item: item[1], reverse=True)
+        return [(index, score) for index, score in ranked[:top_n]]
+
+    @staticmethod
+    def _predict(model: Any, pairs: list[tuple[str, str]]) -> list[float]:
+        raw = model.predict(pairs, show_progress_bar=False)
+        return [float(score) for score in raw]
+```
+
+`rerank` 先确保模型可用：若 `_ensure_model` 返回 `None`，它直接转发给 `LexicalRerankProvider`。可用时，它把查询与文档拼成 `(query, document)` 对，通过 `asyncio.to_thread` 在线程中批量打分，再按分数降序取前 `top_n` 条，返回 `(原下标, 分数)`。
+
 这里有一条硬性事实，读者必须记准：本项目的精排模型是 `BAAI/bge-reranker-base`，**不是 Cohere**。Cohere 是一个商业重排服务，本项目从未调用过它。
 
 > 把精排模型写成 Cohere，是最容易被代码对质发现的一处错误，因为它与 `cross_encoder_model` 的默认配置直接冲突。
 
 `DocumentReranker.rerank` 负责把提供者返回的 `(原下标, 分数)` 还原成切片列表：它按新分数重新排序，更新每个切片的名次，并把来源标记为 `rerank`。这一层封装把"打分"与"重排"分开，便于单独测试。
+
+`app/retrieval/reranker.py` —— `DocumentReranker.rerank`
+
+```python
+    async def rerank(
+        self,
+        query: str,
+        chunks: list[RetrievedChunk],
+        *,
+        top_n: int,
+    ) -> list[RetrievedChunk]:
+        if not chunks:
+            return []
+        documents = [chunk.content for chunk in chunks]
+        ranked = await self._provider.rerank(query, documents, top_n=min(top_n, len(chunks)))
+        results: list[RetrievedChunk] = []
+        for new_rank, (original_index, score) in enumerate(ranked, start=1):
+            chunk = chunks[original_index].model_copy(deep=True)
+            chunk.score = score
+            chunk.rank = new_rank
+            chunk.source = "rerank"
+            results.append(chunk)
+        return results
+```
+
+`DocumentReranker.rerank` 先从每条切片取出正文交给提供者，再把返回的 `(original_index, score)` 映射回原切片：它用 `model_copy(deep=True)` 复制一份，写入新的 `score` 与 `rank`，并把 `source` 标为 `rerank`。
 
 ---
 
@@ -68,6 +120,31 @@
 精排依赖 `sentence-transformers` 与模型权重，这两者可能不可用。
 
 当依赖缺失或权重加载失败时，`CrossEncoderRerankProvider` 退回 `LexicalRerankProvider`，也就是按查询与文档的字符重叠度打分。
+
+`app/providers/reranker.py` —— `LexicalRerankProvider.rerank`
+
+```python
+    async def rerank(
+        self,
+        query: str,
+        documents: list[str],
+        *,
+        top_n: int,
+    ) -> list[tuple[int, float]]:
+        query_tokens = set(query.lower())
+        scored: list[tuple[int, float]] = []
+        for index, document in enumerate(documents):
+            doc_tokens = set(document.lower())
+            if not query_tokens:
+                score = 0.0
+            else:
+                score = len(query_tokens & doc_tokens) / len(query_tokens)
+            scored.append((index, score))
+        scored.sort(key=lambda item: item[1], reverse=True)
+        return scored[:top_n]
+```
+
+`LexicalRerankProvider.rerank` 把查询与文档都拆成字符集合，用两者的交集大小除以查询字符数作为分数，再按分数降序返回前 `top_n` 条。它是无权重环境下的替代实现，并不做查询与文档的联合编码。
 
 > 这条降级路径只用于测试环境与无权重开发，**它不是交叉编码器**，不能写进简历，也不能作为精排能力的证明。
 

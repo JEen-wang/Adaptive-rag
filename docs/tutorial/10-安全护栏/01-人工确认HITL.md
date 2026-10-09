@@ -35,6 +35,37 @@
 
 第四步是**执行**。执行器看到请求里带了确认标识，才允许写工具运行。
 
+`app/agents/nodes/executor.py` —— `executor_node` 的写操作分支
+
+```python
+        tool = registry.get(step.tool_name)
+        confirmed = bool(state.get("confirm_action_id"))
+        try:
+            if tool.risk in WRITE_RISKS:
+                assert_permitted(tool, confirmed=confirmed)
+                idem_key = context.confirmed_action_id or context.idempotency_key
+                if idem_key:
+                    fp = _fingerprint(tool.name, step.arguments)
+                    existing = await idempotency.get_if_matches(idem_key, fp)
+                    if existing is not None:
+                        results.append(
+                            ToolResult(
+                                name=tool.name, success=True, output=existing, risk=tool.risk
+                            )
+                        )
+                        TOOL_CALLS.labels(tool=tool.name, status="idempotent").inc()
+                        calls += 1
+                        continue
+                    result = await tool.run(step.arguments, context)
+                    await idempotency.put(idem_key, fp, result.output)
+                    TOOL_CALLS.labels(tool=tool.name, status="ok").inc()
+                    results.append(result)
+                    calls += 1
+                    continue
+```
+
+`executor_node` 先取出工具，再用 `state.get("confirm_action_id")` 计算 `confirmed` 布尔值。当工具属于 `WRITE_RISKS` 时，它调用 `assert_permitted` 校验确认标识；没有确认标识就会在这里抛出 `ToolPermissionError`，写操作不会执行。通过校验后，它才继续走幂等查询与真正执行的分支。
+
 > 这四步把"模型想退"和"用户同意退"分成了两件事，任何一步缺失，写操作都不会发生。
 
 ---
@@ -78,6 +109,18 @@
 本项目的幂等由 `IdempotencyRepository` 实现。执行器在执行写工具前，先算出参数指纹，也就是把工具名与参数序列化后取 SHA256，再以确认标识或幂等键为键去查历史。
 
 如果查到相同指纹，系统返回首次结果；如果键相同但指纹不同，系统抛出 `IDEMPOTENCY_CONFLICT`。
+
+`app/agents/nodes/executor.py` —— `_fingerprint`
+
+```python
+def _fingerprint(tool_name: str, arguments: dict) -> str:
+    payload = json.dumps(
+        {"tool": tool_name, "arguments": arguments}, sort_keys=True, ensure_ascii=False
+    )
+    return hashlib.sha256(payload.encode()).hexdigest()
+```
+
+`_fingerprint` 把工具名与参数一起序列化，用 `sort_keys=True` 保证字典顺序稳定，再取 SHA256 作为指纹。参数只要有任何一处不同，指纹就会改变，因此同一幂等键配上不同参数会被识别为冲突，而不是重复。
 
 > 这个设计把"重复"与"冲突"分开处理，既保证了同一操作只执行一次，又防止了"换个参数重复提交"。
 
