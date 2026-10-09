@@ -1,5 +1,29 @@
 # 项目结构诊断
 
+> **整理状态（2026-10-09）**：本文列出的问题已完成一轮集中处理，逐项结论见下方「0. 处理结果」。
+> 仍未处理的项目保留在对应章节，作为后续待办。
+
+## 0. 处理结果
+
+已完成：
+
+- **P0 Git 根目录**：仓库已在正确根目录初始化并关联远程 `origin`，建立了首个正式提交。
+- **P1 依赖双轨**：移除已过期的 `requirements.txt`，依赖唯一来源统一为 `pyproject.toml`（含 `dev` / `rerank` / `docs` 可选组），并在 `CONTRIBUTING.md` 写明安装方式。
+- **P1 应用启动职责**：`build_container()` 已拆分为 `build_infrastructure()` / `build_retrieval()` / `build_container()`，且 `seed` 默认关闭（`seed: bool = False`）。
+- **P2 模块级 docstring**：全仓库 98 处无信息量的样板 docstring 已替换为逐模块的准确描述。
+- **P2 公共接口注释**：已为 provider 协议、工具基类、`create_app`、chat 路由等核心公共接口补充 Google 风格 docstring。
+- **低优先级 CLI 拆分**：`app/cli.py` 已拆分为 `app/cli/{render,client,commands}` 包。
+- **低优先级文档归档**：面试材料已归入 `docs/interview/`，并补齐 `.md` 扩展名与索引。
+- **工程卫生**：统一换行符为 LF 并新增 `.gitattributes`；`.gitignore` 补齐本地工作目录；`ruff format` + `ruff check` 全仓库清零。
+
+仍待处理：
+
+- **P1 降级策略分散**：`DependencyHealth` / capability 状态尚未统一，健康检查的 backend 报告仍需集中化。
+- **P2 领域边界交叉**：`agents` 节点仍直接依赖 retrieval / tools / memory / providers 的具体实现。
+- **P2 错误处理过宽**：部分 `except Exception` 仍缺少结构化日志与异常类型记录。
+- **P2 配置校验前置**：启动阶段尚未统一输出脱敏后的 backend 运行模式。
+- **低优先级**：评测报告顶部标注数据生成命令与版本；`__init__.py` 重导出（当前保留，属稳定公共 API）。
+
 诊断范围：`app/`、`tests/`、`eval/`、`docs/`、部署文件和 Python 打包配置。
 
 ## 1. 总体结构
