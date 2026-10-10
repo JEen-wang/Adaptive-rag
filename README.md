@@ -9,7 +9,9 @@
   <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white">
   <img alt="LangGraph" src="https://img.shields.io/badge/LangGraph-0.2-6E4AFF">
   <img alt="Pydantic" src="https://img.shields.io/badge/Pydantic-v2-E92063?logo=pydantic&logoColor=white">
-  <img alt="pytest" src="https://img.shields.io/badge/pytest-75_passed-0A9EDC?logo=pytest&logoColor=white">
+  <img alt="pytest" src="https://img.shields.io/badge/pytest-154_passed-0A9EDC?logo=pytest&logoColor=white">
+  <img alt="coverage" src="https://img.shields.io/badge/coverage-73%25-2EA043">
+  <img alt="mypy" src="https://img.shields.io/badge/mypy-clean-2A6DB2">
   <img alt="CI" src="https://img.shields.io/badge/CI-GitHub_Actions-2088FF?logo=githubactions&logoColor=white">
   <img alt="Retrieval Precision@1" src="https://img.shields.io/badge/Retrieval_P%401-89.2%25-2EA043">
   <img alt="Hallucination" src="https://img.shields.io/badge/Hallucination-0%25-2EA043">
@@ -163,7 +165,7 @@ python -m eval.runner --task retrieval
 
 ## 实测结果
 
-以下数字来自 2026-08-22 的一次完整离线评测：`HF_HUB_OFFLINE=1 python -m eval.runner --task all --llm`，生成模型为 DeepSeek `deepseek-chat`，稠密召回为 `BAAI/bge-small-zh-v1.5`（512 维），精排为本地 Cross-Encoder `BAAI/bge-reranker-base`。原始 JSON 与逐项口径见 [`eval/MEASURED.md`](eval/MEASURED.md) 和[完整测评报告](docs/14-evaluation-report.md)。
+以下数字来自 2026-08-22 的一次完整离线评测：`HF_HUB_OFFLINE=1 python -m eval.runner --task all --llm`，生成模型为 DeepSeek `deepseek-chat`，稠密召回为 `BAAI/bge-small-zh-v1.5`（512 维），精排为本地 Cross-Encoder `BAAI/bge-reranker-base`。逐项口径见 [`eval/MEASURED.md`](eval/MEASURED.md) 和[完整测评报告](docs/14-evaluation-report.md)；该轮原始 JSON 未随仓库分发（`eval/reports/*.json` 已在 `.gitignore` 中忽略）。
 
 | 环节 | 规模 | 指标 |
 |---|---|---|
@@ -174,9 +176,9 @@ python -m eval.runner --task retrieval
 | 生成忠实度 | 65 条 | 无检索 80% → RAG 96.9% → RAG + 自纠错 **100%** |
 | 生成幻觉率 | 65 条 | 无检索 20% → RAG 3.1% → RAG + 自纠错 **0%** |
 | 端到端 | 16 条 | 拒答 100% · 工具路径 100% · 关键词 9/11 · P50 4.9s / P95 5.8s |
-| 回归测试 | 75 项 | `pytest -q` **75 passed**（2026-10-10 复测） |
+| 回归测试 | 154 项 | `pytest -q` **154 passed**，覆盖率 **73%**（2026-10-10 复测） |
 
-有五个口径容易被误读，这里主动说明。意图的 100% 含一层规则覆盖，不是纯 LLM 分类器的成绩；本集上 RRF 与仅用 bge-small 的数字相同，**增益实际来自 Cross-Encoder 而非融合**，所以不宣称 RRF 必然优于单路；端到端关键词命中是 9/11 而不是 100%；幻觉评测使用同模型裁判，结论偏乐观；回归测试那一行是 2026-10-10 单独复测的，与上面 2026-08-22 的评测指标不是同一次运行。
+有五个口径容易被误读，这里主动说明。意图的 100% 含一层规则覆盖，不是纯 LLM 分类器的成绩；本集上 RRF 与仅用 bge-small 的数字相同，**增益实际来自 Cross-Encoder 而非融合**，所以不宣称 RRF 必然优于单路；端到端关键词命中是 9/11 而不是 100%；幻觉评测使用同模型裁判，结论偏乐观；回归测试那一行是 2026-10-10 单独复测的，与上面 2026-08-22 的评测指标不是同一次运行，当天下午补了 `eval` 指标与检索核心路径的单测后由 75 增至 154。
 
 ## 文档
 

@@ -5,10 +5,11 @@
 命令：`HF_HUB_OFFLINE=1 python -m eval.runner --task all --llm`  
 模型：DeepSeek `deepseek-chat`（API 上的 DeepSeek-V3）  
 精排：本地 Cross-Encoder `BAAI/bge-reranker-base`（已加载）  
-召回稠密路：本地 `BAAI/bge-small-zh-v1.5`（512 维，本轮 JSON 的 `dense_backend`）  
-JSON：`eval/reports/all_20260822T121308Z.json`
+召回稠密路：本地 `BAAI/bge-small-zh-v1.5`（512 维，本轮 JSON 的 `dense_backend`）
 
-上一轮 hash 对照（同日更早）：`eval/reports/all_20260822T042748Z.json`，仅向量 Hit@1 **3.1%**。本轮已换成 small，不再把 Hybrid 当成 hash。
+> 本轮报告的标识是 `all_20260822T121308Z.json`。`eval/reports/*.json` 已在 `.gitignore` 中忽略、不随仓库分发，所以仓库里看不到报告本体；本文数字即该轮口径，复现命令与依赖版本见上。
+
+上一轮 hash 对照（同日更早，报告标识 `all_20260822T042748Z.json`，同样不入库）：仅向量 Hit@1 **3.1%**。本轮已换成 small，不再把 Hybrid 当成 hash。
 
 ## 可以直接写进简历的
 
@@ -19,7 +20,7 @@ JSON：`eval/reports/all_20260822T121308Z.json`
 - Hybrid + Cross-Encoder：**P@1 89.2%**、**R@3 97.7%**、MRR **0.94**（相对纯 BM25 +12.3 / +7.7 个百分点）
 - 生成 65 条（同模型裁判）：无检索 Faithfulness **80%** / 幻觉 **20%** → RAG **96.9%** / **3.1%** → RAG+自纠错 **100%** / **0%**（&lt;4%）；相对下降 **100%**（≥62%）；RAG 关键词 **95.4%**
 - E2E 16 条：拒答 100%、工具路径 100%；关键词命中 **9/11（81.8%）**；P50 **4.9s** / P95 **5.8s**（n=16 离散分位；最慢 e02 11.1s）
-- pytest：**75 passed**（2026-10-10 复测；早期版本为 49，后补了清洗、Unstructured 解析、精排、Embedding 等测试）
+- pytest：**154 passed**（2026-10-10 下午复测；演进为 49 → 75 → 154，新增的是 `eval` 指标与检索核心路径（cache / self_rag / query_rewrite / vector / tokenizer）的单测，不改动任何业务数字）
 
 ## 不要写
 

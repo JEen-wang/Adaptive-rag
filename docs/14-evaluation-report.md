@@ -24,7 +24,7 @@
 **生成模型 / 裁判模型：** DeepSeek `deepseek-chat`（API 上的 DeepSeek-V3）  
 **稠密召回：** `BAAI/bge-small-zh-v1.5`（已加载）  
 **精排：** `BAAI/bge-reranker-base`（已加载）  
-**原始 JSON：** `eval/reports/all_20260822T121308Z.json`（结论以 MEASURED 为准）
+**原始报告：** 标识 `all_20260822T121308Z.json`。`eval/reports/*.json` 已按 `.gitignore` 忽略、不随仓库分发，仓库内没有报告本体；结论以 [`MEASURED.md`](../eval/MEASURED.md) 为准。
 
 ---
 
@@ -37,7 +37,7 @@
 | 检索 + CE | 同上 | Hybrid+CE **P@1 89.2%**、**R@3 97.7%**、**MRR 0.94** | 相对 BM25 +12.3 / +7.7 个百分点 |
 | 生成 / 幻觉 | 65 条 | RAG+自纠错忠实度 **100%**、幻觉 **0%** | 无检索 80% / 20%；相对下降 100% |
 | E2E | 16 条 | 拒答 / 工具路径 **100%**；关键词 **9/11（81.8%）** | P50 **4.9s** / P95 **5.8s** |
-| 回归 | pytest | **75 passed** | 不打真实 LLM / 不下载权重 |
+| 回归 | pytest | **154 passed** | 不打真实 LLM / 不下载权重 |
 
 ### 要点
 
@@ -220,7 +220,7 @@ def high_precision_intent(query: str) -> IntentLabel | None:
 
 ## 7. 检索
 
-65 条，`top_k=5`。稠密侧是本地 `BAAI/bge-small-zh-v1.5`（`BgeM3EmbeddingProvider`，`backend=bge-small-zh-v1.5`）。Cross-Encoder 已加载，报告含 `hybrid+cross-encoder`。同日更早一轮 hash 对照见 `all_20260822T042748Z.json`（仅向量 Hit@1 3.1%）。
+65 条，`top_k=5`。稠密侧是本地 `BAAI/bge-small-zh-v1.5`（`BgeM3EmbeddingProvider`，`backend=bge-small-zh-v1.5`）。Cross-Encoder 已加载，报告含 `hybrid+cross-encoder`。同日更早一轮 hash 对照（报告标识 `all_20260822T042748Z.json`）仅向量 Hit@1 3.1%。
 
 ### 7.1 系统对照
 
@@ -231,7 +231,7 @@ def high_precision_intent(query: str) -> IntentLabel | None:
 | BM25 + small + RRF | 83.1% | 94.6% | 83.1% | 95.4% | 0.89 |
 | Hybrid + Cross-Encoder | **89.2%** | **97.7%** | 89.2% | 98.5% | **0.94** |
 
-报告字段：`eval/reports/all_20260822T121308Z.json`。
+报告字段：取自该轮报告 `all_20260822T121308Z.json`（未随仓库分发），字段名与 [`eval/runner.py`](../eval/runner.py) 一致。
 
 ### 要点
 
@@ -310,13 +310,13 @@ if not rag_judge.supported:
 | e15 | cancel_order | agent | 5.7s（HITL 确认，未真取消） |
 | e16 | faq_policy | single | 4.8s |
 
-来源：`eval/reports/all_20260822T121308Z.json`。
+来源：该轮报告 `all_20260822T121308Z.json`（未随仓库分发）；汇总口径见 [`MEASURED.md`](../eval/MEASURED.md)。
 
 ---
 
 ## 10. 自动化测试
 
-`pytest -q`：**75 passed**（含 Cross-Encoder / 本地 embedding 单测，mock 权重）。覆盖 RRF、Adaptive 路由、护栏、压缩、工具权限、Skill、MCP、执行 Fallback、自纠错、订单仓储、HTTP 聊天。
+`pytest -q`：**154 passed**（含 Cross-Encoder / 本地 embedding 单测，mock 权重）。覆盖 RRF、Adaptive 路由、护栏、压缩、工具权限、Skill、MCP、执行 Fallback、自纠错、订单仓储、HTTP 聊天，以及 `eval` 指标函数与检索缓存 / 自纠正 / 查询改写 / 向量检索 / 分词。
 
 pytest **不**调用真实 DeepSeek / 不下载 Cross-Encoder。线上指标必须 `eval.runner --llm`；CE 分数必须 `hybrid+cross-encoder` 那一行。
 

@@ -271,7 +271,7 @@ RRF 只能说「两路都排得靠前」，不能判断「这段是否真回答�
 
 ## 评测口径
 
-65 条 / 39 篇 / 已加载 small + Cross-Encoder / JSON `all_20260822T121308Z.json`：
+65 条 / 39 篇 / 已加载 small + Cross-Encoder / 报告 `all_20260822T121308Z.json`（未随仓库分发）：
 
 | 系统 | Precision@1 | Recall@3 | MRR |
 |---|---|---|---|

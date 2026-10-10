@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   lint-and-test:
-    name: ruff + pytest (py${{ matrix.python-version }})
+    name: ruff + mypy + pytest (py${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -25,6 +25,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      # uv.lock is the reproducibility anchor; fail fast if it drifts from pyproject.
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Lockfile in sync
+        run: uv lock --check
 
       - uses: actions/setup-python@v5
         with:
@@ -43,5 +51,12 @@ jobs:
       - name: Ruff lint
         run: python -m ruff check .
 
+      - name: Mypy
+        run: python -m mypy
+
       - name: Pytest
-        run: python -m pytest -q
+        run: >-
+          python -m pytest -q
+          --cov=app --cov=eval
+          --cov-report=term:skip-covered
+          --cov-fail-under=70

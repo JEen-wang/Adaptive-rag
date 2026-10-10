@@ -1,7 +1,7 @@
 # 项目结构诊断
 
 > 本文是项目自身的结构体检记录，供维护者使用。
-> **最近一次复检：2026-10-10**，在隔离环境里实际跑过 `ruff check .` 与 `pytest -q`。
+> **最近一次复检：2026-10-10**，在隔离环境里实际跑过 `ruff check .`、`ruff format --check .` 与 `pytest --cov`。
 > 逐项结论见下方「0. 处理结果」，仍未处理的保留在对应章节作为待办。
 
 ## 0. 处理结果
@@ -27,10 +27,19 @@
 - **文档口径打架**：`docs/README.md` 说教学文档「共 13 个部分」，与 `docs/tutorial/README.md` 的「12 个部分」冲突，已统一为「12 个部分、43 篇正文」。
 - **本文原先的位置**：`PROJECT_DIAGNOSIS.md` 放在仓库根目录，对外展示时会直接暴露内部弱点清单，已移入 `docs/19-project-diagnosis.md`。
 
+### 2026-10-10 下午：覆盖率体检与评测溯源修复
+
+- **`eval/` 曾整体 0% 覆盖**：首次跑 `--cov=app --cov=eval` 得到 TOTAL **68%**，其中 `eval/metrics.py`（33 行，7 个纯函数）与 `eval/runner.py`（339 行）**完全未覆盖**，`tests/` 下也没有 `test_metrics.py`。一个以评测驱动为卖点的项目，指标函数本身零测试，面试时容易被追问。**已补** 6 个测试文件（`test_metrics.py`、`test_retrieval_cache.py`、`test_query_rewrite.py`、`test_self_rag.py`、`test_vector_store.py`、`test_tokenizer.py`），测试数 75 → **154**，总覆盖率 68% → **73%**，`eval/metrics.py` 0% → **100%**。
+- **检索核心路径覆盖洼地**：`app/retrieval/cache.py` 37%、`self_rag.py` 53%、`query_rewrite.py` 53%、`vector.py` 59%、`tokenizer.py` 58%。**已补**针对性单测，现为 98% / 100% / 100% / 65% / 100%；`vector.py` 剩余部分是 `QdrantVectorStore`，需要真实 Qdrant 才能覆盖。
+- **评测报告引用的根因是 `.gitignore` 而非文件丢失**：`.gitignore` 第 48–51 行明确忽略 `eval/reports/*.json`，那些报告**按设计就不入库**，文档把它们当作可访问的「来源」才是问题所在。**已把 6 处措辞统一改为**「报告标识 xxx（未随仓库分发）」并保留复现命令，`eval/MEASURED.md` 顶部也补了一句说明。
+
+- **没有类型检查**：dev 依赖只有 pytest / ruff，没有 mypy。**已补** `mypy>=2.0` 到 dev 组，配置写在 `pyproject.toml` 的 `[tool.mypy]`，并加进 CI。首轮跑出 26 个错误、11 个文件，其中 16 个是 `Tool` 基类模板方法导致的 LSP `override` 告警（子类把 `execute` 的 payload 收窄到具体 Input 模型），已按框架约定关闭该错误码并在配置里注明；其余 10 处是真实类型问题，已逐处修复（`memory.py` 的 `str | None`、`factory.py` 的 `object` 推断、`logistics_tools.py` 的 `dict` 推断、`graph.py` 的返回标注、`chat_service.py` 的 `cast`、`client.py` 的 `None` 收窄、`runner.py` 的 `dict` 标注）。现在 `mypy` 对 124 个源文件全绿。
+- **没有覆盖率门禁**：CI 只跑 `pytest -q`。**已改**为带 `--cov=app --cov=eval --cov-fail-under=70`，当前 73%，留 3 个点余量。
+- **没有锁文件**：**已补** `uv.lock`（220 个包，universal 解析）。CI 增加 `uv lock --check` 防止它与 `pyproject.toml` 漂移，本地可用 `uv sync --extra dev` 复现依赖树。
+
 ### 仍未处理
 
-- **评测原始数据缺失（当前最高优先级）**：`eval/reports/` 里只有 `.gitkeep`，而 `all_20260822T121308Z.json`、`all_20260822T042748Z.json`、`latest.json` 在仓库、本地磁盘与 git 历史中**都不存在**，却被 `eval/MEASURED.md`（2 处）、`docs/14-evaluation-report.md`（3 处）、`docs/04-adaptive-rag.md`、`docs/15-ingest-and-retrieval.md`、`docs/tutorial/13-附录/05-完整测评数据表.md` 当作「来源」引用。整个项目的立论是数字可追溯，这条证据链是断的。修法二选一：重跑 `python -m eval.runner --task all --llm` 生成 JSON 并在 `.gitignore` 里放开；或把文档措辞改为「本轮报告未保留」。
-- **没有锁文件**：`pyproject.toml` 全部是范围版本，但实测数字绑定在具体依赖与模型版本上，建议补 `uv.lock` 或锁定版 `requirements.txt`。
+- **BM25 检索指标与文档记录不一致**：在无 bge / Cross-Encoder 权重的降级环境下复跑 `--task retrieval`，得到 BM25 P@1 **80.0%**、R@3 **90.0%**、MRR **0.8556**；而 `docs/14-evaluation-report.md` 与 `eval/MEASURED.md` 记录的是 P@1 **76.9%**、R@3 90.0%、MRR **0.84**。R@3 吻合、P@1 差 2 条，且 `knowledge/`（39 篇）、`eval/dataset/`、`eval/runner.py`、`app/retrieval/bm25.py` 自 initial commit 起均未改动，疑似 jieba / rank-bm25 依赖版本漂移。**待复核**：需要还原 2026-08-22 的依赖版本，或直接以当前环境重跑并同步更新数字。
 - **P1 降级策略分散**：`DependencyHealth` / capability 状态尚未统一，健康检查的 backend 报告仍需集中化。
 - **P2 领域边界交叉**：`agents` 节点仍直接依赖 retrieval / tools / memory / providers 的具体实现。
 - **P2 配置校验前置**：启动阶段尚未统一输出脱敏后的 backend 运行模式。

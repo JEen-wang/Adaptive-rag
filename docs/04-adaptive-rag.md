@@ -226,7 +226,7 @@ query 含订单号或「订单」：**不缓存**（状态会变）。实现：`
 
 ## 评测口径
 
-65 条 / 已加载 `bge-small-zh-v1.5` + Cross-Encoder / JSON `all_20260822T121308Z.json`：
+65 条 / 已加载 `bge-small-zh-v1.5` + Cross-Encoder / 报告 `all_20260822T121308Z.json`（未随仓库分发）：
 
 | 系统 | Precision@1 | Recall@3 | MRR |
 |---|---|---|---|
