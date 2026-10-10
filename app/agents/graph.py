@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from functools import partial
 
 from langgraph.graph import END, START, StateGraph
+from langgraph.graph.state import CompiledStateGraph
 
 from app.agents.nodes.executor import executor_node
 from app.agents.nodes.faithfulness import faithfulness_node
@@ -49,7 +49,7 @@ def build_graph(
     retriever: HybridRetriever,
     reranker: DocumentReranker,
     registry: ToolRegistry,
-) -> Callable:
+) -> CompiledStateGraph:
     classifier = IntentClassifier(llm)
     adaptive = AdaptiveRouter(llm)
     rewriter = QueryRewriter(llm)

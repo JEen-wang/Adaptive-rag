@@ -9,13 +9,16 @@ from __future__ import annotations
 import asyncio
 import json
 from collections.abc import AsyncIterator
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import httpx
 
 from app.cli.render import HELP, apply_event, emit, format_meta, parse_sse_data_line
 from app.core.ids import new_trace_id
 from app.schemas.chat import ChatRequest
+
+if TYPE_CHECKING:
+    from app.services.container import AppContainer
 
 DEFAULT_BASE = "http://127.0.0.1:8000"
 DEFAULT_USER = "u_demo"
@@ -48,7 +51,7 @@ class ChatCli:
         self._pending_id: str | None = None
         self._pending_summary: str | None = None
         self._http: httpx.AsyncClient | None = None
-        self._container = None
+        self._container: AppContainer | None = None
 
     async def setup(self) -> str:
         """Connect to a running API, or start the engine in-process, and return a banner."""
@@ -84,6 +87,7 @@ class ChatCli:
         return await self._chat_http(message, confirm=confirm)
 
     async def _chat_local(self, message: str, *, confirm: str | None) -> dict[str, Any]:
+        assert self._container is not None  # chat() only routes here when set
         request = ChatRequest(
             message=message,
             user_id=self._user_id,
@@ -111,9 +115,10 @@ class ChatCli:
 
     async def _chat_http_stream(self, payload: dict[str, Any]) -> dict[str, Any]:
         assert self._http is not None
+        http = self._http  # bind locally: the closure loses the None-narrowing
 
         async def events() -> AsyncIterator[dict[str, Any]]:
-            async with self._http.stream(
+            async with http.stream(
                 "POST", f"{self._base}/api/v1/chat/stream", json=payload
             ) as response:
                 if response.status_code >= 400:

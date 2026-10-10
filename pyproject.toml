@@ -35,6 +35,7 @@ dev = [
     "pytest-cov>=6.0.0,<7",
     "httpx>=0.27.0",
     "ruff>=0.8.0,<0.9",
+    "mypy>=2.0,<3",
 ]
 rerank = [
     "sentence-transformers>=3.1.0,<4",
@@ -77,6 +78,17 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 # 测试里断言“任意异常”是常见写法。
 "tests/**" = ["B017"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["app", "eval"]
+ignore_missing_imports = true
+show_error_codes = true
+
+# Tool 基类用模板方法：子类把 execute 的 payload 从 BaseModel 收窄到具体 Input 模型。
+# 这在类型论上违反 LSP，但在本框架里是安全的（调用方经 registry 按具体类型派发），
+# 因此关闭 override 检查。若要严格检查，应把 Tool 改成泛型 Tool[P]。
+disable_error_code = ["override"]
 
 [tool.ruff.format]
 quote-style = "double"

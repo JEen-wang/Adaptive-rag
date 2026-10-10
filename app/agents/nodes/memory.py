@@ -16,8 +16,9 @@ async def memory_node(
 ) -> dict:
     messages = list(state.get("messages") or [])
     messages.append(ChatMessage(role="user", content=state["user_query"]))
-    if state.get("final_answer"):
-        messages.append(ChatMessage(role="assistant", content=state["final_answer"]))
+    final_answer = state.get("final_answer")
+    if final_answer:
+        messages.append(ChatMessage(role="assistant", content=final_answer))
     tool_results = list(state.get("tool_results") or [])
     summary = state.get("summary") or ""
     messages, tool_results, level, summary = apply_compression(

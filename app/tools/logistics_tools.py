@@ -1,5 +1,7 @@
 """Logistics tools: shipment tracking."""
 
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 from app.core.enums import ToolRisk
@@ -32,7 +34,7 @@ class TrackShipmentTool(RepositoryBackedTool, Tool):
 
     async def execute(self, parsed: TrackInput, context: ToolContext) -> ToolResult:
         order = await self.repository.get_visible_order(parsed.order_id, context.user_id)
-        events = []
+        events: list[dict[str, Any]] = []
         if order.paid_at:
             events.append({"status": "warehouse", "at": order.paid_at.isoformat()})
         if order.shipped_at:

@@ -6,6 +6,7 @@ import asyncio
 import logging
 import time
 from collections.abc import AsyncIterator
+from typing import cast
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -178,7 +179,8 @@ class ChatService:
 
     async def _invoke(self, state: AgentState) -> AgentState:
         try:
-            return await self._graph.ainvoke(state)
+            # LangGraph widens the state to dict[str, Any]; the graph contract is AgentState.
+            return cast(AgentState, await self._graph.ainvoke(state))
         except GuardrailError as exc:
             return {
                 **state,
