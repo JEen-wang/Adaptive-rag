@@ -15,6 +15,7 @@ import json
 import time
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 from eval.metrics import (
     accuracy,
@@ -571,7 +572,7 @@ def main() -> None:
         if args.task == "all":
             return await run_all(llm=args.llm)
         if args.task == "intent":
-            result = {
+            result: dict[str, Any] = {
                 "intent_rules": eval_intent_rules(),
                 "intent_overlay": eval_intent_overlay(),
             }
