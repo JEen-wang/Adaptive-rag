@@ -36,6 +36,7 @@
 - **没有类型检查**：dev 依赖只有 pytest / ruff，没有 mypy。**已补** `mypy>=2.0` 到 dev 组，配置写在 `pyproject.toml` 的 `[tool.mypy]`，并加进 CI。首轮跑出 26 个错误、11 个文件，其中 16 个是 `Tool` 基类模板方法导致的 LSP `override` 告警（子类把 `execute` 的 payload 收窄到具体 Input 模型），已按框架约定关闭该错误码并在配置里注明；其余 10 处是真实类型问题，已逐处修复（`memory.py` 的 `str | None`、`factory.py` 的 `object` 推断、`logistics_tools.py` 的 `dict` 推断、`graph.py` 的返回标注、`chat_service.py` 的 `cast`、`client.py` 的 `None` 收窄、`runner.py` 的 `dict` 标注）。现在 `mypy` 对 124 个源文件全绿。
 - **没有覆盖率门禁**：CI 只跑 `pytest -q`。**已改**为带 `--cov=app --cov=eval --cov-fail-under=70`，当前 73%，留 3 个点余量。
 - **没有锁文件**：**已补** `uv.lock`（220 个包，universal 解析）。CI 增加 `uv lock --check` 防止它与 `pyproject.toml` 漂移，本地可用 `uv sync --extra dev` 复现依赖树。
+- **Python 3.11 兼容性 bug（CI 首次运行抓到）**：`eval/runner.py` 的 f-string 表达式里写了转义的 `\"`，Python 3.11 会直接抛 `SyntaxError: f-string expression part cannot include a backslash`——PEP 701 允许 f-string 表达式含反斜杠是 **3.12** 才落地的。本地开发环境是 3.13，所以这个错误长期未暴露，**意味着声明支持的 3.11 用户根本无法运行 `python -m eval.runner`**。已把该默认值提取成变量。另用 AST 扫描全仓库 159 个 `.py` 文件，确认无同类写法。教训：本地解释器版本高于 `requires-python` 下限时，CI 是唯一的兼容性防线。
 
 ### 仍未处理
 

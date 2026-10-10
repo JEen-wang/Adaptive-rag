@@ -238,9 +238,12 @@ async def eval_retrieval() -> dict:
             return await fallback.rerank(query, fused, top_n=5)
 
         systems.append(await _run("hybrid+lexical-fallback", _hybrid_lexical))
+        # Kept out of the f-string on purpose: a backslash inside an f-string
+        # expression is a SyntaxError on Python 3.11 (PEP 701 landed in 3.12).
+        rerank_hint = ce_provider.load_error or 'pip install -e ".[rerank]"'
         note = (
             "Cross-Encoder not loaded; hybrid+cross-encoder skipped. "
-            f"{ce_provider.load_error or 'pip install -e \".[rerank]\"'}. "
+            f"{rerank_hint}. "
             "Lexical fallback is CI-only, not a Cross-Encoder."
         )
     return {
