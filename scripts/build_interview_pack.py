@@ -281,7 +281,6 @@ def parse_md(md: str, styles: dict) -> list:
     while i < n:
         line = lines[i]
         if line.strip() == "```" or line.strip().startswith("```"):
-            lang = line.strip()[3:].strip()
             buf = []
             i += 1
             while i < n and not lines[i].strip().startswith("```"):
@@ -295,8 +294,10 @@ def parse_md(md: str, styles: dict) -> list:
             story.append(KeepTogether([block]))
             continue
 
-        if line.strip().startswith("|") and i + 1 < n and (
-            lines[i + 1].strip().startswith("|") or is_table_sep(lines[i + 1])
+        if (
+            line.strip().startswith("|")
+            and i + 1 < n
+            and (lines[i + 1].strip().startswith("|") or is_table_sep(lines[i + 1]))
         ):
             rows = [split_table_row(line)]
             i += 1
@@ -322,7 +323,12 @@ def parse_md(md: str, styles: dict) -> list:
                         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1B3A4B")),
                         ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
                         ("BACKGROUND", (0, 1), (-1, -1), colors.HexColor("#FAFBFC")),
-                        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F4F7F8")]),
+                        (
+                            "ROWBACKGROUNDS",
+                            (0, 1),
+                            (-1, -1),
+                            [colors.white, colors.HexColor("#F4F7F8")],
+                        ),
                         ("GRID", (0, 0), (-1, -1), 0.3, colors.HexColor("#D0D7DE")),
                         ("VALIGN", (0, 0), (-1, -1), "TOP"),
                         ("LEFTPADDING", (0, 0), (-1, -1), 4),
@@ -371,7 +377,9 @@ def parse_md(md: str, styles: dict) -> list:
             continue
 
         if stripped.startswith("- ") or stripped.startswith("* "):
-            while i < n and (lines[i].strip().startswith("- ") or lines[i].strip().startswith("* ")):
+            while i < n and (
+                lines[i].strip().startswith("- ") or lines[i].strip().startswith("* ")
+            ):
                 item = lines[i].strip()[2:]
                 story.append(Paragraph("• " + inline_to_xml(item), styles["li"]))
                 i += 1

@@ -9,7 +9,8 @@
   <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white">
   <img alt="LangGraph" src="https://img.shields.io/badge/LangGraph-0.2-6E4AFF">
   <img alt="Pydantic" src="https://img.shields.io/badge/Pydantic-v2-E92063?logo=pydantic&logoColor=white">
-  <img alt="pytest" src="https://img.shields.io/badge/pytest-49_passed-0A9EDC?logo=pytest&logoColor=white">
+  <img alt="pytest" src="https://img.shields.io/badge/pytest-75_passed-0A9EDC?logo=pytest&logoColor=white">
+  <img alt="CI" src="https://img.shields.io/badge/CI-GitHub_Actions-2088FF?logo=githubactions&logoColor=white">
   <img alt="Retrieval Precision@1" src="https://img.shields.io/badge/Retrieval_P%401-89.2%25-2EA043">
   <img alt="Hallucination" src="https://img.shields.io/badge/Hallucination-0%25-2EA043">
 </p>
@@ -173,9 +174,9 @@ python -m eval.runner --task retrieval
 | 生成忠实度 | 65 条 | 无检索 80% → RAG 96.9% → RAG + 自纠错 **100%** |
 | 生成幻觉率 | 65 条 | 无检索 20% → RAG 3.1% → RAG + 自纠错 **0%** |
 | 端到端 | 16 条 | 拒答 100% · 工具路径 100% · 关键词 9/11 · P50 4.9s / P95 5.8s |
-| 回归测试 | — | `pytest -q` **49 passed** |
+| 回归测试 | 75 项 | `pytest -q` **75 passed**（2026-10-10 复测） |
 
-有四个口径容易被误读，这里主动说明。意图的 100% 含一层规则覆盖，不是纯 LLM 分类器的成绩；本集上 RRF 与仅用 bge-small 的数字相同，**增益实际来自 Cross-Encoder 而非融合**，所以不宣称 RRF 必然优于单路；端到端关键词命中是 9/11 而不是 100%；幻觉评测使用同模型裁判，结论偏乐观。
+有五个口径容易被误读，这里主动说明。意图的 100% 含一层规则覆盖，不是纯 LLM 分类器的成绩；本集上 RRF 与仅用 bge-small 的数字相同，**增益实际来自 Cross-Encoder 而非融合**，所以不宣称 RRF 必然优于单路；端到端关键词命中是 9/11 而不是 100%；幻觉评测使用同模型裁判，结论偏乐观；回归测试那一行是 2026-10-10 单独复测的，与上面 2026-08-22 的评测指标不是同一次运行。
 
 ## 文档
 
@@ -230,6 +231,8 @@ docs/             技术文档 + 教学文档
 **写操作默认不落地。** 工具调用带权限判定、风险分级与幂等键。高风险写操作先返回 `pending_action`，用户确认后才执行，重复确认不会重复扣减。
 
 **关键路径可单测。** RRF 融合、复杂度路由、上下文压缩、工具权限、Skill 匹配、MCP 代理、执行降级与自纠错都有单元测试，`tests/conftest.py` 会清空真实 API Key 并 mock 模型权重，测试不打真实接口也不下载模型。
+
+**CI 守门。** `.github/workflows/ci.yml` 在每次 push 和 PR 时于 Python 3.11 与 3.12 上依次跑 `ruff format --check`、`ruff check` 与 `pytest`，三项任一失败即标红，避免文档里的「代码干净、测试全过」变成口头承诺。
 
 **可观测。** 请求带 `trace_id` 贯穿全链路，日志为结构化 JSON，指标覆盖延迟、token、路由分布与错误率，并可按策略维度下钻。
 

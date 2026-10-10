@@ -94,7 +94,7 @@ HTTP → ChatService → LangGraph → Retriever 或 Tool → Provider / DB
 
 ## 系统化工程教程
 
-面向"从零讲清一个可运行的多智能体 RAG 客服系统"的成体系教程，共 13 个部分：
+面向「从零讲清一个可运行的多智能体 RAG 客服系统」的成体系教程，共 **12 个部分、43 篇正文**（另有附录一章）：
 
 - [教学教程总目录](tutorial/README.md)
 
@@ -103,3 +103,4 @@ HTTP → ChatService → LangGraph → Retriever 或 Tool → Provider / DB
 - [Adaptive-RAG 工程化教学路线](00-engineering-tutorial.md)（单篇速览）
 - [项目架构图与运行流程](17-architecture-flow.md)
 - [教学文档写作蓝图](18-teaching-doc-blueprint.md)（施工图，供后续扩写参考）
+- [项目结构诊断](19-project-diagnosis.md)（维护者自用：历史问题与处理结果，不对读者承诺功能）

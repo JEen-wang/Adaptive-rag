@@ -356,7 +356,7 @@ def precision_at_k(relevant, retrieved, k):
 
 E2E 16 条（含注入）：拒答/工具路径 100%；关键词 **9/11**；P50 **4.9s** / P95 **5.8s**。注入拒答大约 10ms——因为它根本不打 LLM。
 
-pytest 清空真实 key、不下载本地模型（`tests/conftest.py`），49 passed。线上数字必须 `--llm`。
+pytest 清空真实 key、不下载本地模型（`tests/conftest.py`），75 passed。线上数字必须 `--llm`。
 
 **不能写：** 没加载 Cross-Encoder 却写「CE 把 Precision 提到 xx」；没跑 generation 却写幻觉下降 62%。
 

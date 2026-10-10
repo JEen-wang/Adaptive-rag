@@ -37,7 +37,7 @@
 | 检索 + CE | 同上 | Hybrid+CE **P@1 89.2%**、**R@3 97.7%**、**MRR 0.94** | 相对 BM25 +12.3 / +7.7 个百分点 |
 | 生成 / 幻觉 | 65 条 | RAG+自纠错忠实度 **100%**、幻觉 **0%** | 无检索 80% / 20%；相对下降 100% |
 | E2E | 16 条 | 拒答 / 工具路径 **100%**；关键词 **9/11（81.8%）** | P50 **4.9s** / P95 **5.8s** |
-| 回归 | pytest | **49 passed** | 不打真实 LLM / 不下载权重 |
+| 回归 | pytest | **75 passed** | 不打真实 LLM / 不下载权重 |
 
 ### 要点
 
@@ -316,7 +316,7 @@ if not rag_judge.supported:
 
 ## 10. 自动化测试
 
-`pytest -q`：**49 passed**（含 Cross-Encoder / 本地 embedding 单测，mock 权重）。覆盖 RRF、Adaptive 路由、护栏、压缩、工具权限、Skill、MCP、执行 Fallback、自纠错、订单仓储、HTTP 聊天。
+`pytest -q`：**75 passed**（含 Cross-Encoder / 本地 embedding 单测，mock 权重）。覆盖 RRF、Adaptive 路由、护栏、压缩、工具权限、Skill、MCP、执行 Fallback、自纠错、订单仓储、HTTP 聊天。
 
 pytest **不**调用真实 DeepSeek / 不下载 Cross-Encoder。线上指标必须 `eval.runner --llm`；CE 分数必须 `hybrid+cross-encoder` 那一行。
 
