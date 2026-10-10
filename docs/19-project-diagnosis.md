@@ -40,7 +40,9 @@
 
 ### 仍未处理
 
-- **BM25 检索指标与文档记录不一致**：在无 bge / Cross-Encoder 权重的降级环境下复跑 `--task retrieval`，得到 BM25 P@1 **80.0%**、R@3 **90.0%**、MRR **0.8556**；而 `docs/14-evaluation-report.md` 与 `eval/MEASURED.md` 记录的是 P@1 **76.9%**、R@3 90.0%、MRR **0.84**。R@3 吻合、P@1 差 2 条，且 `knowledge/`（39 篇）、`eval/dataset/`、`eval/runner.py`、`app/retrieval/bm25.py` 自 initial commit 起均未改动，疑似 jieba / rank-bm25 依赖版本漂移。**待复核**：需要还原 2026-08-22 的依赖版本，或直接以当前环境重跑并同步更新数字。
+- **BM25 检索指标与文档记录不一致（已复核，原因仍未定位）**：在无 bge / Cross-Encoder 权重的降级环境下复跑 `--task retrieval`，**稳定**得到 BM25 P@1 **80.0%**、R@3 **90.0%**、MRR **0.8556**（连跑两次结果一致）；而 `docs/14-evaluation-report.md` 与 `eval/MEASURED.md` 记录的是 P@1 **76.9%**、R@3 90.0%、MRR **0.84**。已逐项排除：`knowledge/`（39 篇）、`eval/dataset/`、`eval/runner.py`、`app/retrieval/bm25.py` 自 initial commit 起均未改动；jieba **0.42.1** 与 rank-bm25 **0.2.2** 都是各自最后一个发布版本，不存在「新版漂移」；`list_knowledge_files()` 有 `sorted()`、`KnowledgeIngestor.load()` 是串行循环，枚举顺序确定。**2026-08-22 那轮的实际运行参数与环境已无法回溯**。待决策：以当前锁定依赖重跑并更新文档数字，或在文档注明该数字的出处与不可复现性。
+- **未命中集中在聚合类文档，疑似金标粒度偏窄**：13 条 P@1 未命中里有 **8 条（62%）** 的金标是 `faq` 或 `coupons`，而这两个文档在金标总数里只占约 **19%**（faq 8 次 / coupons 6 次 / 总标注约 72）。典型样本：「电子发票多久能开」金标 `faq`、召回 `invoice_vat`；「NEW10 满多少能用」金标 `coupons`、召回 `promo_stacking`。`faq.md` 与 `coupons.md` 属「聚合兜底」类文档，问题问得宽泛时金标标了它们、BM25 却召回更具体的专题文档。**这类标注粒度问题对 P@1 影响很大**，建议逐条复核这 8 条的金标是否过窄——若是，则 76.9% / 80.0% 这个数字本身受标注口径影响，不宜作为唯一结论。
+- **`document_id` 依赖仓库绝对路径，跨机器不可复现**：`document_id_from_path()` 用 `hashlib.sha1(str(path.resolve()))` 生成后缀，而 `path.resolve()` 是**绝对路径**。该 id 经 `stable_chunk_id` → `stable_point_id` 传导到 Qdrant 的 point id，于是同一份知识库在 Windows 与 Linux 上会算出**完全不同的 point id**（本机 `return_policy_c6acad66`，Linux 上会是另一个 digest）。多实例部署共享同一 collection 时无法幂等覆盖，只会不断产生重复 point。对评测无影响（`_doc_stem` 会剥掉该后缀），但影响生产部署。**修法**：把 `path.resolve()` 换成 `path.name`（或相对 knowledge 根的路径）。注意这会改变所有已有 id、需要重建向量库，因此待确认后再动。
 - **P1 降级策略分散**：`DependencyHealth` / capability 状态尚未统一，健康检查的 backend 报告仍需集中化。
 - **P2 领域边界交叉**：`agents` 节点仍直接依赖 retrieval / tools / memory / providers 的具体实现。
 - **P2 配置校验前置**：启动阶段尚未统一输出脱敏后的 backend 运行模式。
