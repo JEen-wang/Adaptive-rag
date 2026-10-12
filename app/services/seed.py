@@ -2,6 +2,7 @@
 
 from datetime import timedelta
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.enums import OrderStatus
@@ -10,9 +11,7 @@ from app.repositories.models import OrderItemRow, OrderRow, ProductRow
 
 
 async def seed_demo_data(session: AsyncSession) -> None:
-    exists = await session.get(OrderRow, "ORD10001")
-    if exists is not None:
-        return
+    """Insert missing demo rows without changing existing orders or products."""
     now = utcnow()
     products = [
         ProductRow(
@@ -43,7 +42,9 @@ async def seed_demo_data(session: AsyncSession) -> None:
             description="基础纯棉短袖",
         ),
     ]
-    session.add_all(products)
+    for product in products:
+        if await session.get(ProductRow, product.sku) is None:
+            session.add(product)
     orders = [
         OrderRow(
             order_id="ORD10001",
@@ -78,32 +79,36 @@ async def seed_demo_data(session: AsyncSession) -> None:
             receiver_city="杭州",
         ),
     ]
-    session.add_all(orders)
-    session.add_all(
-        [
-            OrderItemRow(
-                order_id="ORD10001",
-                sku="SKU-HEADSET",
-                name="降噪耳机 Pro",
-                quantity=1,
-                unit_price_cents=29900,
-                customized=False,
-            ),
-            OrderItemRow(
-                order_id="ORD10002",
-                sku="SKU-MUG-CUSTOM",
-                name="定制马克杯",
-                quantity=1,
-                unit_price_cents=3900,
-                customized=True,
-            ),
-            OrderItemRow(
-                order_id="ORD10003",
-                sku="SKU-TEE",
-                name="纯棉T恤",
-                quantity=1,
-                unit_price_cents=7900,
-                customized=False,
-            ),
-        ]
+    for order in orders:
+        if await session.get(OrderRow, order.order_id) is None:
+            session.add(order)
+    items = [
+        OrderItemRow(
+            order_id="ORD10001",
+            sku="SKU-HEADSET",
+            name="降噪耳机 Pro",
+            quantity=1,
+            unit_price_cents=29900,
+            customized=False,
+        ),
+        OrderItemRow(
+            order_id="ORD10002",
+            sku="SKU-MUG-CUSTOM",
+            name="定制马克杯",
+            quantity=1,
+            unit_price_cents=3900,
+            customized=True,
+        ),
+        OrderItemRow(
+            order_id="ORD10003",
+            sku="SKU-TEE",
+            name="纯棉T恤",
+            quantity=1,
+            unit_price_cents=7900,
+            customized=False,
+        ),
+    ]
+    existing_items = set(
+        (await session.execute(select(OrderItemRow.order_id, OrderItemRow.sku))).all()
     )
+    session.add_all(item for item in items if (item.order_id, item.sku) not in existing_items)

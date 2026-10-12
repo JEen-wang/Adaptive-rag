@@ -57,7 +57,8 @@ api:
 - [ ] 真实 embedding 网关（否则对外以 BM25 为准）
 - [ ] `pip install -e ".[rerank]"` 后重跑 retrieval，报告含 `hybrid+cross-encoder`
 - [ ] `pip install -e ".[docs]"` 后用真实 PDF/扫描件验证 ingest；换切分后重跑 `--task retrieval`
-- [ ] `u_demo` / `anonymous` 读全库订单已关闭或隔离
+- [x] `u_demo` / `anonymous` 全局读单已关闭
+- [ ] 在可信网关认证用户并绑定 `user_id`；当前请求体仍可伪造身份，不可直接对公网开放
 - [ ] liveness / readiness 分开（见 [08](08-reliability.md#探活)）
 - [ ] 密钥不在日志、镜像、README
 - [ ] 长期 Postgres 用 Alembic（现在启动仍 `create_all`）

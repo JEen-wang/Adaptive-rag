@@ -1,6 +1,6 @@
 # 面试官：你这 RAG 是 Demo 还是能上线的？
 
-> 对照仓库：Adaptive-RAG 电商客服。数字来自 `eval/MEASURED.md`（2026-08-22，DeepSeek `deepseek-chat` + Cross-Encoder）。没跑过的数字本文不写。想按八股模块逐条对代码，用 [16 · 八股对照](16-interview-bagu-map.md)。
+> 对照仓库：Adaptive-RAG 电商客服。数字来自 `eval/MEASURED.md`（2026-08-22，DeepSeek `deepseek-chat` + Cross-Encoder）。没跑过的数字本文不写。想按 zero2Agent 考察维度对照项目板块和代码，用 [16 · 项目面试地图](16-interview-bagu-map.md)。
 
 ## 一场面试带来的思考
 

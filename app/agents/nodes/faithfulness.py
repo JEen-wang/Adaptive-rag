@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from app.agents.nodes.generate import AnswerPayload, _offline_answer
+from app.agents.nodes.generate import AnswerPayload, _extractive_fallback, _offline_answer
 from app.agents.state import AgentState
 from app.core.enums import RetrievalStrategy
 from app.core.exceptions import LLMOutputError, LLMProviderError

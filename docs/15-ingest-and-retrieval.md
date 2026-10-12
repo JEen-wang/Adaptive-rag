@@ -15,7 +15,7 @@
 
 对应：`app/retrieval/`、`app/providers/embeddings.py`、`app/providers/reranker.py`、`knowledge/`。
 
-对照来源：[面试八股文](https://github.com/bcefghj/ai-agent-interview-guide/tree/main/docs/01-面试八股文) 九模块与本仓库的逐条对照见 [16](16-interview-bagu-map.md)。
+对应的 Agent/RAG 面试问题已按 [zero2Agent 面试通关目录](https://github.com/ranxi2001/zero2Agent/tree/main/learn-agent-interview) 的维度整理到 [项目面试地图](16-interview-bagu-map.md)；本章聚焦实际解析与检索链路。
 
 路由、Self-RAG、Agent 细节见 [04](04-adaptive-rag.md)。数字只引用 [`eval/MEASURED.md`](../eval/MEASURED.md)。
 

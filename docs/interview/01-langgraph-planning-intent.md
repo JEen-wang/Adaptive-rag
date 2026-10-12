@@ -4,7 +4,7 @@
 >
 > 用法：每个问题先给 **30 秒开口**，再给对照仓库的详细答案。数字只引用 `[eval/MEASURED.md](../../eval/MEASURED.md)`（2026-08-22）。行为只写代码里真实存在的；没做的会标明。
 >
-> 配套：[03 架构](../03-architecture.md) · [05 智能体](../05-agents-and-tools.md) · [08 可靠性](../08-reliability.md) · [10 评测](../10-evaluation.md) · [13 面试稿](../13-interview-engineering-rag.md) · [16 八股对照](../16-interview-bagu-map.md)
+> 正文先读 [Chapter 1 · 执行图](chapter1.md)。配套：[03 架构](../03-architecture.md) · [05 智能体](../05-agents-and-tools.md) · [08 可靠性](../08-reliability.md) · [10 评测](../10-evaluation.md) · [面试维度索引](../16-interview-bagu-map.md)。
 
 ## 本章目录
 
@@ -1013,4 +1013,4 @@ Adaptive-RAG 的论文映射在 `adaptive.py` 注释里：simple→DIRECT/REFUSE
 
 ---
 
-上一章 [16 · 八股对照](../16-interview-bagu-map.md)
+返回 [16 · 项目面试地图](../16-interview-bagu-map.md)

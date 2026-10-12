@@ -1,10 +1,6 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="docs/assets/hero-light.svg">
-  <img alt="Adaptive RAG：按问题复杂度选择回答、检索、工具或拒答路径的电商客服系统" src="docs/assets/hero-light.svg" width="100%">
-</picture>
 
-<h1 align="center">Adaptive RAG · 多智能体电商客服</h1>
+
+<h1 align="center">Adaptive RAG · 电商客服工作流</h1>
 
 <p align="center"><strong>让简单问题直接回答，让复杂问题找到证据，让业务操作停在确认之前。</strong></p>
 <p align="center">FastAPI × LangGraph × 混合检索 · API、流式对话与 ChatGPT 风格 Web 工作台</p>
@@ -20,6 +16,7 @@
 <p align="center">
   <a href="#overview">项目亮点</a> · <a href="#quickstart">快速开始</a> ·
   <a href="#architecture">系统架构</a> · <a href="#evaluation">实测结果</a> ·
+  <a href="#resume">简历写法</a> ·
   <a href="#docs">完整文档</a> · <a href="#limitations">使用边界</a>
 </p>
 
@@ -175,6 +172,30 @@ python -m eval.runner --task retrieval
 cd frontend && npm test && npm run build
 ```
 
+<a id="resume"></a>
+
+## 📝 简历写法
+
+基于Adaptive-RAG的电商客服觉问题严重的痛点设计并实现了基于Adaptive-RAG的电商客服系统。
+
+项目概述:针对基于FAQ的传统客服系统长尾问题命中率极低，人工介入成本高的问题和常规RAG多跳推理能力差，幻
+
+架构设计:基于LangGraph搭建核心状态机，规划器与执行器，统一接入核心工具，实现流式输出与指数退避+抖动重试:解析意图识别，采用Prompt-template+DeepSeck v3构建意图路由节点并通过 LLM自主决策分解子任务并调用工具，自建100条测试query测试意图识别准确率达到97%。
+
+检索阶段:FAQ、退货策略、配送说明等文档进行预处理、切分、向量化索引。基于Adaptive-RAG实现科学感知的逻
+辑路由，动态调度检索策略，并通过问题改写和混合检索，解决多跳问题。
+
+检索优化:基于 Self-RAG构建多轮检索策略，并利用RRF算法对多源异构检索结果进行融合与去重，随后调用Cohere模型进行重排序。Precision 76%89%，Recall 63%91%，Faithfulness 54%88%，幻觉率下降62%。
+
+上下文压缩与记忆管理:针对长会话导致的Token冗余及成本问题，开发128k Token预算管理模块(滑动窗口+动态摘要);实现3层压缩流水线，在上下文利用率在50%~70%时自动收紧工具结果体积，>85%时触发auto-compact，达到
+从轻量级截断到全量摘要逐级递进的渐进式压缩。
+
+Ski+MCP的可插拔能力体系:支持按需加载退货处理、订单跟踪、商品推荐等标准化技能流程，并将本地工具与远程
+MCP工具统一为Function Calling接。
+
+兜底与护栏机制:设计任务分解和工具执行层双向引入Falback机制:部署查询边界、幻觉检测与自纠错重试机制，将
+幻觉率控制在4%以下。
+
 <a id="docs"></a>
 
 ## 🗺️ 从哪里继续阅读
@@ -187,6 +208,7 @@ cd frontend && npm test && npm run build
 | 查接口、配置、安全与可靠性 | [API](docs/06-api-reference.md) · [配置](docs/07-configuration.md) · [安全](docs/09-security.md) · [可靠性](docs/08-reliability.md) |
 | 核对实验口径与数字 | [评测方法](docs/10-evaluation.md) · [原始数字说明](eval/MEASURED.md) |
 | 系统学习 RAG 工程实践 | [12 部分教学文档](docs/tutorial/README.md) |
+| 准备 Agent/RAG 面试 | [Chapter 1](docs/interview/chapter1.md) · [Chapter 2](docs/interview/chapter2.md) · [Chapter 3](docs/interview/chapter3.md) · [17 维度索引](docs/16-interview-bagu-map.md) |
 
 完整索引见 [`docs/README.md`](docs/README.md)。源码可从 `app/asgi.py` → `app/services/chat_service.py` → `app/agents/graph.py` 开始读；Web 代码在 `frontend/src/`。
 
@@ -226,6 +248,10 @@ docs/             技术手册与教学文档
 - 知识库启动时全量 ingest，尚无增量删除接口；Embedding / 精排权重不可用时会降级，降级后的效果未单独评测。
 
 更多实现边界与后续方向见[限制与路线图](docs/12-limitations.md)。
+
+## ⭐ Star 统计
+
+[![Star History Chart](https://api.star-history.com/svg?repos=JEen-wang/Adaptive-rag&type=Date)](https://www.star-history.com/?repos=JEen-wang%2FAdaptive-rag&type=date)
 
 ## 🤝 参与贡献
 
