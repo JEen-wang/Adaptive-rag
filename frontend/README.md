@@ -25,6 +25,8 @@ npm test
 npm run build
 ```
 
+GitHub CI 也会执行 `npm ci`、`npm test` 和 `npm run build`，前端改动必须通过这三步。
+
 构建结果在 `frontend/dist`。FastAPI 检测到该目录后会在 `/` 提供页面；Docker 镜像会在 Node 构建阶段自动生成并复制它。
 
 ## 数据与身份边界
