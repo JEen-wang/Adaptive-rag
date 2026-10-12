@@ -12,6 +12,9 @@ __pycache__/
 *.so
 .Python
 .venv/
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
 venv/
 env/
 *.egg-info/

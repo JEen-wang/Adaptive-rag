@@ -22,6 +22,7 @@
   <a href="#系统架构">系统架构</a> ·
   <a href="#实测结果">实测结果</a> ·
   <a href="docs/README.md">技术文档</a> ·
+  <a href="frontend/README.md">Web 前端</a> ·
   <a href="docs/tutorial/README.md">教学文档</a> ·
   <a href="eval/MEASURED.md">实测原始数据</a>
 </p>
@@ -145,6 +146,16 @@ curl -s localhost:8000/api/v1/chat \
 ```bash
 python -m app.cli
 ```
+
+也可以打开 ChatGPT 风格的 Web 工作台。保持 API 运行，另开终端执行：
+
+```bash
+cd frontend
+npm ci
+npm run dev
+```
+
+访问 `http://127.0.0.1:5173`。前端通过 Vite 代理连接本地 API；执行 `npm run build` 后，FastAPI 也会在 `/` 提供构建好的页面。界面支持流式回答、引用、会话搜索和待确认操作。会话列表暂存浏览器本地，后端尚无历史列表接口。详见 [Web 前端说明](frontend/README.md)。
 
 仓库预置了三个订单用于演示工具调用与人工确认流程：
 
