@@ -9,6 +9,7 @@
 3. [探活与第一问](#探活与第一问)
 4. [演示订单与 HITL](#演示订单与-hitl)
 5. [测试](#测试)
+6. [Web 前端](#web-前端)
 
 ## 环境与安装
 
@@ -115,6 +116,18 @@ python -m eval.runner --task retrieval
 ```
 
 `tests/conftest.py` 会清空 `DEEPSEEK_API_KEY`，避免误打真实接口。
+
+## Web 前端
+
+保持 API 在 8000 端口运行，另开终端：
+
+```bash
+cd frontend
+npm ci
+npm run dev
+```
+
+打开 `http://127.0.0.1:5173`。Vite 会将 `/api` 代理到 8000 端口；生产构建由 `npm run build` 生成，FastAPI 检测到 `frontend/dist` 后会在 `/` 提供页面。前端实现和本地会话存储限制见 [`frontend/README.md`](../frontend/README.md)。
 
 下一步：[11 · 部署](11-deployment.md)、[06 · API](06-api-reference.md)。
 
