@@ -52,10 +52,13 @@ class SelfRAGLoop:
         missing = ""
         for _hop in range(self._settings.max_retrieval_hops):
             rewritten = await self._rewriter.rewrite(current_query, missing_aspect=missing)
-            hop_query = rewritten[0]
-            candidates = await self._retriever.retrieve(hop_query, top_k=top_k)
+            queries = list(dict.fromkeys([query, *rewritten]))[:2]
+            candidates_by_id: dict[str, RetrievedChunk] = {}
+            for search_query in queries:
+                for candidate in await self._retriever.retrieve(search_query, top_k=top_k):
+                    candidates_by_id.setdefault(candidate.chunk_id, candidate)
             reranked = await self._reranker.rerank(
-                hop_query, candidates, top_n=self._settings.rerank_top_n
+                query, list(candidates_by_id.values()), top_n=self._settings.rerank_top_n
             )
             for chunk in reranked:
                 accumulated[chunk.chunk_id] = chunk

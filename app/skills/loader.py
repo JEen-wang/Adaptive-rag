@@ -12,7 +12,7 @@ INTENT_TO_SKILL = {
     "refund": "return_handling",
     "logistics": "order_tracking",
     "order_inquiry": "order_tracking",
-    "cancel_order": "order_tracking",
+    "cancel_order": "order_cancellation",
     "recommendation": "product_recommend",
     "product_consult": "product_recommend",
 }

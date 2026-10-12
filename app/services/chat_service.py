@@ -6,6 +6,7 @@ import asyncio
 import logging
 import time
 from collections.abc import AsyncIterator
+from dataclasses import dataclass
 from typing import cast
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -13,22 +14,29 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from app.agents.graph import build_graph
 from app.agents.state import AgentState
 from app.config.settings import Settings
-from app.core.exceptions import AppError, GuardrailError, RateLimitError
+from app.core.exceptions import AppError, GuardrailError, InvalidRequestError, RateLimitError
 from app.core.ids import new_id
 from app.core.request_scope import request_session
-from app.core.streaming import reset_token_sink, set_token_sink
 from app.infra.rate_limit import RateLimiter
 from app.observability.metrics import REQUEST_LATENCY, REQUESTS, ROUTING, STAGE_LATENCY, TOKEN_USAGE
 from app.providers.base import LLMProvider
 from app.repositories.session_repository import SessionRepository
 from app.retrieval.hybrid import HybridRetriever
 from app.retrieval.reranker import DocumentReranker
-from app.schemas.chat import ChatRequest, ChatResponse
+from app.schemas.chat import ActionProposal, ChatRequest, ChatResponse
 from app.schemas.common import LatencyBreakdown, TokenUsage
 from app.tools.factory import build_tool_registry
 from app.tools.registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class PendingConfirmation:
+    session_id: str
+    user_id: str
+    action: ActionProposal
+    expires_at: float
 
 
 class ChatService:
@@ -50,6 +58,7 @@ class ChatService:
         self._session_factory = session_factory
         self._rate_limiter = rate_limiter
         self.registry = registry or build_tool_registry(retriever)
+        self._pending_actions: dict[str, PendingConfirmation] = {}
         self._graph = build_graph(
             llm=llm,
             settings=settings,
@@ -68,24 +77,20 @@ class ChatService:
             response = self._to_response(result, session_id=session_id, trace_id=trace_id)
             await self._persist(db, request, response, summary=result.get("summary") or "")
             await db.commit()
+        self._remember_pending(request, response)
         self._observe(response, started)
         return response
 
     async def stream(self, request: ChatRequest, *, trace_id: str) -> AsyncIterator[dict]:
-        """SSE: node events plus token events from DeepSeek stream during generate_answer."""
+        """SSE: report progress, then send only the validated user-facing answer."""
         await self._enforce_rate_limit(request.user_id)
-        yield {"event": "started", "trace_id": trace_id}
         started = time.perf_counter()
         session_id = request.session_id or new_id("sess_")
         async with request_session(self._session_factory) as db:
             state = await self._initial_state(db, request, session_id, trace_id)
+            yield {"event": "started", "trace_id": trace_id}
             queue: asyncio.Queue[dict | None] = asyncio.Queue()
             holder: dict = {"merged": dict(state), "guardrail": None, "error": None}
-
-            async def emit(token: str) -> None:
-                await queue.put({"event": "token", "text": token})
-
-            sink_token = set_token_sink(emit)
 
             async def _run_graph() -> None:
                 try:
@@ -115,7 +120,6 @@ class ChatService:
                     yield item
                 await task
             finally:
-                reset_token_sink(sink_token)
                 if not task.done():
                     task.cancel()
 
@@ -140,7 +144,12 @@ class ChatService:
             response = self._to_response(merged, session_id=session_id, trace_id=trace_id)
             await self._persist(db, request, response, summary=merged.get("summary") or "")
             await db.commit()
+        self._remember_pending(request, response)
         self._observe(response, started)
+        # Never stream the LLM's JSON envelope or an answer that may still be
+        # replaced by the faithfulness check. Only the final answer is public.
+        for index in range(0, len(response.answer), 48):
+            yield {"event": "token", "text": response.answer[index : index + 48]}
         yield {"event": "answer", "data": response.model_dump(mode="json")}
         yield {"event": "done", "trace_id": trace_id}
 
@@ -156,6 +165,7 @@ class ChatService:
         session_id: str,
         trace_id: str,
     ) -> AgentState:
+        confirmed_action = self._resolve_confirmation(request, session_id)
         sessions = SessionRepository(db)
         await sessions.get_or_create(session_id, request.user_id)
         history = await sessions.recent_messages(session_id)
@@ -174,8 +184,36 @@ class ChatService:
             "token_usage": TokenUsage(),
             "latency": LatencyBreakdown(),
             "confirm_action_id": request.confirm_action_id,
+            "confirmed_action": confirmed_action,
             "idempotency_key": request.idempotency_key,
         }
+
+    def _resolve_confirmation(self, request: ChatRequest, session_id: str) -> ActionProposal | None:
+        if not request.confirm_action_id:
+            return None
+        pending = self._pending_actions.get(request.confirm_action_id)
+        if (
+            pending is None
+            or pending.expires_at < time.monotonic()
+            or pending.session_id != session_id
+            or pending.user_id != request.user_id
+        ):
+            raise InvalidRequestError("待确认操作不存在或已过期，请重新发起。")
+        return pending.action
+
+    def _remember_pending(self, request: ChatRequest, response: ChatResponse) -> None:
+        now = time.monotonic()
+        self._pending_actions = {
+            key: value for key, value in self._pending_actions.items() if value.expires_at > now
+        }
+        action = response.pending_action
+        if action is not None:
+            self._pending_actions[action.action_id] = PendingConfirmation(
+                session_id=response.session_id,
+                user_id=request.user_id,
+                action=action,
+                expires_at=now + 15 * 60,
+            )
 
     async def _invoke(self, state: AgentState) -> AgentState:
         try:

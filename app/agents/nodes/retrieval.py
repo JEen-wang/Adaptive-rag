@@ -12,6 +12,7 @@ from app.retrieval.query_rewrite import QueryRewriter
 from app.retrieval.reranker import DocumentReranker
 from app.retrieval.self_rag import SelfRAGLoop
 from app.schemas.common import LatencyBreakdown
+from app.schemas.retrieval import RetrievedChunk
 
 
 async def retrieval_node(
@@ -35,9 +36,13 @@ async def retrieval_node(
         chunks = await self_rag.retrieve(query, top_k=top_k)
         rewritten = [query]
     else:
-        rewritten = await rewriter.rewrite(query)
-        candidates = await retriever.retrieve(rewritten[0], top_k=top_k)
-        chunks = await reranker.rerank(rewritten[0], candidates, top_n=settings.rerank_top_n)
+        suggestions = await rewriter.rewrite(query)
+        rewritten = list(dict.fromkeys([query, *suggestions]))[:2]
+        by_id: dict[str, RetrievedChunk] = {}
+        for search_query in rewritten:
+            for candidate in await retriever.retrieve(search_query, top_k=top_k):
+                by_id.setdefault(candidate.chunk_id, candidate)
+        chunks = await reranker.rerank(query, list(by_id.values()), top_n=settings.rerank_top_n)
     latency = state.get("latency") or LatencyBreakdown()
     latency.retrieval_ms = (time.perf_counter() - started) * 1000
     return {"retrieved_chunks": chunks, "rewritten_queries": rewritten, "latency": latency}

@@ -123,7 +123,7 @@ export function useChat() {
 
   const send = useCallback(async (raw: string, confirmActionId?: string) => {
     const text = raw.trim();
-    if (!text || text.length > 4000 || busyRef.current) return;
+    if (!text || text.length > 4000 || busyRef.current) return false;
     const current = stateRef.current;
     const existing = current.conversations.find((item) => item.id === current.activeId);
     const conversation: Conversation = existing ?? {
@@ -161,6 +161,7 @@ export function useChat() {
         controller.signal,
       );
       if (!answered) throw new Error("连接已结束，但未收到最终回答。请重试。");
+      return true;
     } catch (error) {
       const stopped = controller.signal.aborted;
       if (!answered) {
@@ -172,6 +173,7 @@ export function useChat() {
           message: error instanceof Error ? error.message : "请求失败，请稍后重试。",
         });
       }
+      return false;
     } finally {
       requestRef.current = null;
       busyRef.current = false;

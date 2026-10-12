@@ -303,21 +303,19 @@ class MCPToolProxy(Tool):
 
 ### 要点
 
-`ChatService.stream` 用 contextvar 挂 token sink；`generate_node` 若存在 sink 则调 `llm.stream`。DeepSeek 请求带 `"stream": true`，边收边 `yield`。SSE 事件：`started` → `node`/`token` → `answer` → `done`。
+`generate_node` 先解析模型返回的结构化 JSON，`check_faithfulness` 可进一步纠正或拒答。`ChatService.stream` 随后只把最终可展示的答案拆成 `token` 事件，避免向用户短暂显示内部 JSON 或未校验的草稿。SSE 事件：`started` → `node` → `token` → `answer` → `done`。生成与校验期间客户端显示等待状态。
 
 ### 代码摘要
 
 ```python
-# app/agents/nodes/generate.py
-async def _generate_or_stream(llm, messages):
-    sink = get_token_sink()
-    if sink is None or getattr(llm, "stream", None) is None:
-        return await llm.generate(messages, ..., response_format={"type": "json_object"})
-    async for token in llm.stream(messages, ...):
-        await sink(token)
+# app/services/chat_service.py（摘要）
+response = self._to_response(merged, session_id=session_id, trace_id=trace_id)
+for index in range(0, len(response.answer), 48):
+    yield {"event": "token", "text": response.answer[index : index + 48]}
+yield {"event": "answer", "data": response.model_dump(mode="json")}
 ```
 
-Graph 在独立 task 里跑，token 与 node 事件通过 `asyncio.Queue` 交错推给客户端（`app/services/chat_service.py`）。
+Graph 在独立 task 里跑，节点进度通过 `asyncio.Queue` 传给客户端；答案 token 在 Graph 完成后发送（`app/services/chat_service.py`）。
 
 ---
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 from app.core.exceptions import LLMOutputError, LLMProviderError
 from app.prompts.query_rewrite import REWRITE_SYSTEM, REWRITE_USER
 from app.providers.base import LLMProvider
+from app.providers.fake import OfflineLLMProvider
 from app.providers.json_parser import extract_json_object
 
 
@@ -13,6 +14,8 @@ class QueryRewriter:
         self._llm = llm
 
     async def rewrite(self, query: str, *, missing_aspect: str = "") -> list[str]:
+        if isinstance(self._llm, OfflineLLMProvider):
+            return [query]
         try:
             response = await self._llm.generate(
                 [

@@ -72,7 +72,7 @@ uvicorn app.asgi:app --reload --port 8000
 
 Windows PowerShell 激活虚拟环境可使用 `.venv\Scripts\Activate.ps1`。首次启用本地 Embedding / Cross-Encoder 时可能需要下载模型；需要完整的本地精排依赖可安装 `pip install -e ".[rerank]"`。更多选项见[配置参考](docs/07-configuration.md)。
 
-`.env` 中的 `DEEPSEEK_API_KEY` 可留空：此时使用 `FakeLLMProvider` 验证链路，回答是占位内容。要体验真实生成回答，需要配置可用的 DeepSeek 密钥。**不要提交 `.env` 或密钥。**
+`.env` 中的 `DEEPSEEK_API_KEY` 可留空：此时系统进入离线演示模式，展示检索原文或可核对的订单状态，不会假装生成完整答案。要体验生成式回答，需要配置可用的 DeepSeek 密钥。**不要提交 `.env` 或密钥。**
 
 ### 2. 发送第一条消息
 

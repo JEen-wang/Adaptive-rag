@@ -30,7 +30,7 @@
 
 | 能力 | 代码 |
 |---|---|
-| SSE token | `DeepSeekProvider.stream`、`ChatService.stream` |
+| SSE token | `ChatService.stream` 在答案完成校验后分段发送；生成期间客户端显示等待状态 |
 | MCP 可执行 | `app/mcp/runtime.py`、`MCPToolProxy.execute` |
 | Skill 按需加载 | `match_skill` + Planner 收缩目录 |
 | 执行层 Fallback | `execute_with_fallback` |

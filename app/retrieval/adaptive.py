@@ -19,6 +19,7 @@ from app.core.enums import IntentLabel, QueryComplexity, RetrievalStrategy
 from app.core.exceptions import LLMOutputError, LLMProviderError
 from app.prompts.complexity import COMPLEXITY_SYSTEM, COMPLEXITY_USER
 from app.providers.base import LLMProvider
+from app.providers.fake import OfflineLLMProvider
 from app.providers.json_parser import parse_model
 from app.schemas.agent import ComplexityResult, IntentResult
 
@@ -41,12 +42,11 @@ _TOOL_CUES = (
     "运单",
     "退款进度",
     "取消订单",
-    "查一下",
     "我的单",
     "order",
     "tracking",
 )
-_ORDER_ID = re.compile(r"(ORD[-_]?\d{6,}|\d{12,})", re.IGNORECASE)
+_ORDER_ID = re.compile(r"\b(?:ORD[-_]?\d{4,}|\d{12,})\b", re.IGNORECASE)
 
 
 def rule_based_complexity(query: str, intent: IntentResult) -> ComplexityResult:
@@ -65,18 +65,46 @@ def rule_based_complexity(query: str, intent: IntentResult) -> ComplexityResult:
             confidence=0.9,
             rationale="social_or_greeting",
         )
+    policy_question = not _ORDER_ID.search(text) and any(
+        cue in text
+        for cue in (
+            "规则",
+            "政策",
+            "条件",
+            "怎么算",
+            "可以吗",
+            "能不能",
+            "怎么退",
+            "能退吗",
+            "能取消吗",
+        )
+    )
+    if policy_question and intent.label in {
+        IntentLabel.CANCEL_ORDER,
+        IntentLabel.REFUND,
+        IntentLabel.RETURN_EXCHANGE,
+    }:
+        return ComplexityResult(
+            complexity=QueryComplexity.SINGLE_HOP,
+            strategy=RetrievalStrategy.SINGLE,
+            confidence=0.78,
+            rationale="general_policy_without_order",
+        )
+    transactional = intent.label in {
+        IntentLabel.ORDER_INQUIRY,
+        IntentLabel.LOGISTICS,
+        IntentLabel.CANCEL_ORDER,
+        IntentLabel.HUMAN_HANDOFF,
+    }
+    needs_account_data = intent.label in {IntentLabel.REFUND, IntentLabel.RETURN_EXCHANGE} and (
+        bool(_ORDER_ID.search(text))
+        or any(cue in text for cue in ("我的", "帮我退", "申请退款", "退款进度", "到账"))
+    )
     if (
-        intent.label
-        in {
-            IntentLabel.ORDER_INQUIRY,
-            IntentLabel.LOGISTICS,
-            IntentLabel.REFUND,
-            IntentLabel.RETURN_EXCHANGE,
-            IntentLabel.CANCEL_ORDER,
-            IntentLabel.HUMAN_HANDOFF,
-        }
+        transactional
+        or needs_account_data
         or _ORDER_ID.search(text)
-        or any(cue in text for cue in _TOOL_CUES)
+        or any(cue in text.lower() for cue in _TOOL_CUES)
     ):
         return ComplexityResult(
             complexity=QueryComplexity.TOOL_REQUIRED,
@@ -106,6 +134,8 @@ class AdaptiveRouter:
 
     async def route(self, query: str, intent: IntentResult) -> ComplexityResult:
         fallback = rule_based_complexity(query, intent)
+        if isinstance(self._llm, OfflineLLMProvider):
+            return fallback
         try:
             response = await self._llm.generate(
                 [
@@ -124,6 +154,13 @@ class AdaptiveRouter:
                 response_format={"type": "json_object"},
             )
             parsed = parse_model(response.content, ComplexityResult)
+            if (
+                fallback.rationale == "general_policy_without_order"
+                and parsed.strategy == RetrievalStrategy.AGENT
+            ):
+                return fallback
+            if _ORDER_ID.search(query) and fallback.strategy == RetrievalStrategy.AGENT:
+                return fallback
             return parsed
         except (LLMProviderError, LLMOutputError):
             return fallback

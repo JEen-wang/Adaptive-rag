@@ -22,3 +22,15 @@ def test_policy_multi_hop() -> None:
     query = "定制马克杯过了7天但是质量问题还能退吗"
     routed = rule_based_complexity(query, intent)
     assert routed.strategy in {RetrievalStrategy.MULTI, RetrievalStrategy.SINGLE}
+
+
+def test_general_return_policy_does_not_request_order_tools() -> None:
+    intent = IntentResult(label=IntentLabel.RETURN_EXCHANGE, confidence=0.8, prompt_version="t")
+    routed = rule_based_complexity("七天无理由退货的规则是什么？", intent)
+    assert routed.strategy == RetrievalStrategy.SINGLE
+
+
+def test_specific_order_return_uses_tools() -> None:
+    intent = IntentResult(label=IntentLabel.RETURN_EXCHANGE, confidence=0.8, prompt_version="t")
+    routed = rule_based_complexity("订单 ORD10002 还能退货吗？", intent)
+    assert routed.strategy == RetrievalStrategy.AGENT

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowDown, ChevronDown, CircleHelp, Menu, PanelLeftOpen } from "lucide-react";
+import { ArrowDown, CircleHelp, Menu, PanelLeftOpen } from "lucide-react";
 import { checkHealth } from "./lib/api";
 import { useChat } from "./hooks/useChat";
 import { Composer } from "./components/Composer";
@@ -13,7 +13,7 @@ const SUGGESTIONS = [
   { icon: "↗", title: "退货政策", prompt: "定制商品过了七天，但有质量问题还能退吗？" },
   { icon: "◎", title: "物流进度", prompt: "帮我查一下 ORD10001 的物流进度" },
   { icon: "◇", title: "支付与发票", prompt: "电子发票一般多久可以开具？" },
-  { icon: "✳", title: "售后处理", prompt: "取消订单 ORD10003" },
+  { icon: "✳", title: "售后处理", prompt: "退货申请需要提供哪些信息？" },
 ];
 
 function App() {
@@ -55,8 +55,10 @@ function App() {
   function suggest(prompt: string) { setDraft(prompt); inputRef.current?.focus(); }
   function confirm(action: ActionProposal, messageId: string) {
     if (!chat.active) return;
-    chat.dismissAction(chat.active.id, messageId);
-    void chat.send("确认执行", action.action_id);
+    const conversationId = chat.active.id;
+    void chat.send("确认执行", action.action_id).then((succeeded) => {
+      if (succeeded) chat.dismissAction(conversationId, messageId);
+    });
   }
 
   return <div className={`app-shell ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
@@ -64,7 +66,7 @@ function App() {
     <main className="main-panel">
       <header className="topbar">
         <button className="icon-button open-sidebar" aria-label="打开侧栏" title="打开侧栏" onClick={() => { setSidebarCollapsed(false); setSidebarOpen(true); }}>{sidebarCollapsed ? <PanelLeftOpen size={20} /> : <Menu size={20} />}</button>
-        <button className="model-select" title="当前模型"><span>Adaptive RAG</span><ChevronDown size={16} /></button>
+        <span className="model-title">Adaptive RAG</span>
         <div className="topbar-right"><span className={`connection-pill ${healthy === false ? "offline" : ""}`}><span />{healthy === null ? "连接中" : healthy ? "已连接" : "服务未连接"}</span><button className="icon-button help-button" title="说明" aria-label="说明" onClick={() => window.open("https://github.com/JEen-wang/Adaptive-rag", "_blank", "noopener,noreferrer")}><CircleHelp size={19} /></button></div>
       </header>
       {chat.active ? <div className="chat-content"><MessageView conversation={chat.active} busy={chat.busy} onConfirm={confirm} onCancel={(messageId) => chat.dismissAction(chat.active!.id, messageId)} /></div>

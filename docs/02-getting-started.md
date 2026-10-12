@@ -14,7 +14,7 @@
 ## 环境与安装
 
 - Python **3.11+**（验证过 3.12）
-- 可选 `DEEPSEEK_API_KEY`（没有则 `FakeLLMProvider`，流程通，回答是占位 JSON）
+- 可选 `DEEPSEEK_API_KEY`（没有则进入离线演示模式，显示检索原文或可核对的业务状态）
 
 ```bash
 python3.12 -m venv .venv
@@ -100,10 +100,10 @@ curl -s localhost:8000/api/v1/chat \
 curl -s localhost:8000/api/v1/chat \
   -H 'content-type: application/json' \
   -d '{"message":"取消订单ORD10003","user_id":"u_demo"}'
-# 把 pending_action.action_id 填回：
+# 把上次响应的 session_id 和 pending_action.action_id 一起填回：
 curl -s localhost:8000/api/v1/chat \
   -H 'content-type: application/json' \
-  -d '{"message":"确认取消","user_id":"u_demo","confirm_action_id":"act_..."}'
+  -d '{"message":"确认取消","user_id":"u_demo","session_id":"sess_...","confirm_action_id":"act_..."}'
 ```
 
 机制见 [05 · HITL](05-agents-and-tools.md#hitl-与幂等)。

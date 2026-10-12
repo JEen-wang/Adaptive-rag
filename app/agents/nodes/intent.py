@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import re
+
 from app.agents.nodes.intent_overlay import apply_intent_overlay
 from app.core.constants import PROMPT_VERSION_INTENT
 from app.core.enums import IntentLabel
 from app.core.exceptions import LLMOutputError, LLMProviderError
 from app.prompts.intent import INTENT_SYSTEM, INTENT_USER
 from app.providers.base import LLMProvider
+from app.providers.fake import OfflineLLMProvider
 from app.providers.json_parser import parse_model
 from app.schemas.agent import IntentResult
 
@@ -29,7 +32,13 @@ _KEYWORD_RULES: list[tuple[tuple[str, ...], IntentLabel]] = [
 def rule_based_intent(query: str) -> IntentResult:
     lowered = query.lower()
     for keywords, label in _KEYWORD_RULES:
-        if any(keyword.lower() in lowered for keyword in keywords):
+        if label == IntentLabel.GREETING:
+            matched = bool(
+                re.fullmatch(r"(?:你好|您好|hi|hello)[!！。．.\s]*", query.strip(), re.I)
+            )
+        else:
+            matched = any(keyword.lower() in lowered for keyword in keywords)
+        if matched:
             return IntentResult(
                 label=label,
                 confidence=0.72,
@@ -67,6 +76,8 @@ class IntentClassifier:
 
     async def classify(self, query: str) -> IntentResult:
         fallback = rule_based_intent(query)
+        if isinstance(self._llm, OfflineLLMProvider):
+            return self._maybe_overlay(query, fallback)
         try:
             response = await self._llm.generate(
                 [

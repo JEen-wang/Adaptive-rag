@@ -56,3 +56,11 @@ class FakeLLMProvider:
 
 class FakeEmbeddingProvider(HashEmbeddingProvider):
     pass
+
+
+class OfflineLLMProvider(FakeLLMProvider):
+    """Marker for a runtime without a configured generation model.
+
+    FakeLLMProvider remains available for tests with canned structured replies.
+    Runtime nodes use this marker to avoid presenting its test JSON as an answer.
+    """

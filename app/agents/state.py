@@ -31,6 +31,7 @@ class AgentState(TypedDict, total=False):
     plan: AgentPlan | None
     tool_results: list[ToolResult]
     pending_action: ActionProposal | None
+    confirmed_action: ActionProposal | None
     confirm_action_id: str | None
     idempotency_key: str | None
     final_answer: str | None
