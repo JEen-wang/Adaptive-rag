@@ -1,7 +1,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark.svg">
   <source media="(prefers-color-scheme: light)" srcset="docs/assets/hero-light.svg">
-  <img alt="Adaptive-RAG 多智能体电商客服 —— 按问题复杂度在 DIRECT / SINGLE / MULTI / AGENT / REFUSE 之间路由" src="docs/assets/hero-light.svg" width="100%">
+  <img alt="Adaptive-RAG 电商客服工作流 —— 按问题复杂度在 DIRECT / SINGLE / MULTI / AGENT / REFUSE 之间路由" src="docs/assets/hero-light.svg" width="100%">
 </picture>
 
 <p align="center">
@@ -34,7 +34,7 @@
 
 ## 这是什么
 
-这是一个可以本机跑起来的多智能体 RAG 电商客服系统。它回答退货政策、查询订单与物流、在用户授权后发起退款或取消，并且在证据不足或请求越界时明确拒答。整个项目围绕一个判断展开：**不同的问题不该走同一条链路**。问候语不需要检索，单条政策问题一次混合检索就够，而「定制马克杯过了七天但有质量问题能不能退」同时牵扯定制商品规则、时效条款和质量例外，需要拆成多个子问题、多跳检索并交叉验证。把这三类问题塞进同一个 `top_k=5` 的向量检索里，要么长尾政策命中不了，要么把上下文塞满噪声。
+这是一个可以本机跑起来的 Adaptive-RAG 电商客服工作流。它回答退货政策、查询订单与物流、在用户授权后发起退款或取消，并且在证据不足或请求越界时明确拒答。整个项目围绕一个判断展开：**不同的问题不该走同一条链路**。问候语不需要检索，单条政策问题一次混合检索就够，而「定制马克杯过了七天但有质量问题能不能退」同时牵扯定制商品规则、时效条款和质量例外，需要拆成多个子问题、多跳检索并交叉验证。把这三类问题塞进同一个 `top_k=5` 的向量检索里，要么长尾政策命中不了，要么把上下文塞满噪声。
 
 因此这个仓库的重点不在「用了 RAG」，而在**把 RAG 做成一件可控的工程**。检索策略是一个枚举而不是散落的 `if`，路由可以单独测试；每一次外部调用都有超时和退避，并且区分「业务失败」与「系统失败」；写操作默认不执行，必须先返回 `pending_action` 等待人工确认；会话上下文有明确预算，超阈值时分级压缩；所有对外承诺的数字都来自仓库里的离线评测脚本，而不是手写的估算。
 
@@ -198,7 +198,7 @@ python -m eval.runner --task retrieval
 | 超时重试与指标 | [08 · 可靠性](docs/08-reliability.md) | `app/core/retry.py`、`app/observability/` |
 | 注入 / 越权 / 密钥 | [09 · 安全](docs/09-security.md) | `app/guardrails/`、`app/tools/permissions.py` |
 | 评测与口径 | [10 · 评测](docs/10-evaluation.md)、[14 · 测评报告](docs/14-evaluation-report.md) | `eval/runner.py`、`eval/MEASURED.md` |
-| 面试与八股对照 | [13 · 工程化面试稿](docs/13-interview-engineering-rag.md)、[16 · 八股对照](docs/16-interview-bagu-map.md) | 全仓库 |
+| 项目面试书 | [Chapter 1](docs/interview/chapter1.md) · [Chapter 2](docs/interview/chapter2.md) · [Chapter 3](docs/interview/chapter3.md) · [17 维度索引](docs/16-interview-bagu-map.md) | 场景 → 机制 → 源码 → 边界 |
 
 **教学文档**（[docs/tutorial/README.md](docs/tutorial/README.md)）是另一套面向学习的材料，共 **12 个部分、43 篇正文**，另附术语表、环境变量、练习答案、源码阅读顺序与完整测评数据表。全书按「打基础 → 提质量 → 管上下文 → 做决策 → 控风险 → 拿证据与上生产」六个阶段组织，从向量与相似度讲起，逐层推进到索引构建、召回、融合精排、查询改写、上下文压缩、意图路由、工作流与工具、安全护栏，最后用评测体系与工程化上线收尾。每篇正文的关键技术实现处都附有仓库里的真实源码片段，末尾还有一句指标回指，指向评测体系中的对应数字。行文风格参考了 Datawhale 的 [all-in-rag](https://github.com/datawhalechina/all-in-rag) 教程。
 

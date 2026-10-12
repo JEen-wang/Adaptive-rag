@@ -33,11 +33,8 @@
 | 完整测评报告 | [14](14-evaluation-report.md) | `eval/MEASURED.md`、`eval/dataset/` |
 | Docker | [11](11-deployment.md) | `docker-compose.yml` |
 | 写掘金/面试长文 | [13](13-interview-engineering-rag.md) | 对照仓库的「玩具 vs 工程化」 |
-| 八股对照本仓库 | [16](16-interview-bagu-map.md) | 八股方法 ↔ 代码路径 |
-| 答辩：状态机 / 规划 / 意图 / 97% | [面试 01](interview/01-langgraph-planning-intent.md) | 逐题开口 + 对照代码 |
-| 答辩：Adaptive-RAG / 切分 / Hybrid / 多跳 | [面试 02](interview/02-adaptive-rag-chunking-hybrid.md) | 逐题开口 + 对照代码 |
-| 答辩：精排口径 / 记忆 / Skill·MCP / 护栏 | [面试 03](interview/03-rerank-memory-skill-mcp.md) | 含数字口径 |
-| 三篇合并 | [面试问答全集](interview/04-full-collection.md) | 开口 + 详细答案 |
+| 项目面试书 | [目录](interview/README.md) | 三章连续讲述请求、证据与行动 |
+| 面试维度索引 | [16](16-interview-bagu-map.md) | zero2Agent 17 维度 ↔ 三章与实现边界 |
 
 ## 章节
 
@@ -56,11 +53,9 @@
 13. [面试稿：Demo 还是能上线](13-interview-engineering-rag.md)（含完整框架图）
 14. [测评报告](14-evaluation-report.md)（数据集、消融、口径陷阱）
 15. [解析、切块、向量化与检索](15-ingest-and-retrieval.md)
-16. [八股对照本仓库](16-interview-bagu-map.md)
-17. [面试问答：LangGraph / 规划执行 / 意图 / 97%](interview/01-langgraph-planning-intent.md)
-18. [面试问答：Adaptive-RAG / 切分索引 / Hybrid / 多跳](interview/02-adaptive-rag-chunking-hybrid.md)
-19. [面试问答：精排口径 / 记忆 / Skill·MCP / 护栏](interview/03-rerank-memory-skill-mcp.md)
-20. [面试问答全集（三篇合并）](interview/04-full-collection.md)
+16. [zero2Agent 面试维度索引](16-interview-bagu-map.md)
+
+项目面试书：[Chapter 1 · 执行图](interview/chapter1.md) → [Chapter 2 · 检索证据](interview/chapter2.md) → [Chapter 3 · 工具与可靠性](interview/chapter3.md)。逐题追问资料从 [面试书目录](interview/README.md) 进入。
 
 ## 仓库地图
 
@@ -94,7 +89,7 @@ HTTP → ChatService → LangGraph → Retriever 或 Tool → Provider / DB
 
 ## 系统化工程教程
 
-面向「从零讲清一个可运行的多智能体 RAG 客服系统」的成体系教程，共 **12 个部分、43 篇正文**（另有附录一章）：
+面向「从零讲清一个可运行的 Adaptive-RAG 电商客服工作流」的成体系教程，共 **12 个部分、43 篇正文**（另有附录一章）：
 
 - [教学教程总目录](tutorial/README.md)
 
@@ -102,5 +97,5 @@ HTTP → ChatService → LangGraph → Retriever 或 Tool → Provider / DB
 
 - [Adaptive-RAG 工程化教学路线](00-engineering-tutorial.md)（单篇速览）
 - [项目架构图与运行流程](17-architecture-flow.md)
-- [教学文档写作蓝图](18-teaching-doc-blueprint.md)（施工图，供后续扩写参考）
+- [教学文档写作蓝图](18-teaching-doc-blueprint.md)（维护者写作规范）
 - [项目结构诊断](19-project-diagnosis.md)（维护者自用：历史问题与处理结果，不对读者承诺功能）
