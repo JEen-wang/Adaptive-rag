@@ -169,7 +169,7 @@ def _offline_answer(state: AgentState) -> tuple[str, set[str]]:
             latest = events[-1] if events else None
             label = (
                 {"warehouse": "仓库处理中", "in_transit": "运输中", "delivered": "已签收"}.get(
-                    latest.get("status"), "状态未知"
+                    str(latest.get("status")), "状态未知"
                 )
                 if isinstance(latest, dict)
                 else "暂无物流轨迹"
