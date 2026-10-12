@@ -1,6 +1,6 @@
 
 
-<h1 align="center">Adaptive RAG · 多智能体电商客服</h1>
+<h1 align="center">Adaptive RAG · 电商客服工作流</h1>
 
 <p align="center"><strong>让简单问题直接回答，让复杂问题找到证据，让业务操作停在确认之前。</strong></p>
 <p align="center">FastAPI × LangGraph × 混合检索 · API、流式对话与 ChatGPT 风格 Web 工作台</p>
@@ -16,6 +16,7 @@
 <p align="center">
   <a href="#overview">项目亮点</a> · <a href="#quickstart">快速开始</a> ·
   <a href="#architecture">系统架构</a> · <a href="#evaluation">实测结果</a> ·
+  <a href="#resume">简历写法</a> ·
   <a href="#docs">完整文档</a> · <a href="#limitations">使用边界</a>
 </p>
 
@@ -171,6 +172,22 @@ python -m eval.runner --task retrieval
 cd frontend && npm test && npm run build
 ```
 
+<a id="resume"></a>
+
+## 📝 简历写法
+
+**项目名称：基于 Adaptive-RAG 的电商客服系统**
+
+**项目概述：** 针对传统 FAQ 客服对长尾问题命中率低、复杂政策问题需要人工介入，以及常规 RAG 多条件推理和答案溯源不足的问题，设计并实现支持复杂度路由、多轮检索、业务工具和人工确认的客服系统。
+
+- **架构与意图：** 基于 LangGraph 构建护栏、意图识别、复杂度路由、规划器与执行器状态机，接入 DeepSeek-V3、流式输出及指数退避加抖动重试；在自建 100 条测试 query 上，`intent_v3` 加歧义规则覆盖层的意图准确率为 **100%**（纯模型结果不能按此数字表述）。
+- **检索与多跳：** 对 FAQ、退货和配送等 39 篇政策文档进行清洗、切分与索引，按问题复杂度选择直接回答、单轮检索、多轮检索或工具执行；结合查询改写、BM25 与 `bge-small-zh-v1.5` 向量召回、RRF 融合及 Self-RAG 式证据评估处理复合问题。
+- **检索质量：** 使用本地 Cross-Encoder `BAAI/bge-reranker-base` 精排；在 65 条政策查询上，相比 BM25 基线，Precision@1 从 **76.9% 提升至 89.2%**，Recall@3 从 **90.0% 提升至 97.7%**。该评测集上 RRF 相对单独向量召回没有额外增益，主要提升来自精排。
+- **记忆与扩展：** 实现 128k Token 预算的滑动窗口和动态摘要，在上下文利用率达到 50%、70%、85% 时逐级收紧工具结果并触发自动压缩；通过 Skill 定义按需选择退货、订单跟踪和推荐流程，将本地与 MCP 工具接入统一的工具注册表。
+- **兜底与护栏：** 在规划和只读工具执行层设置降级路径，并加入查询边界、权限校验、写操作人工确认、答案忠实度检查及自纠错。65 条生成评测中，无检索基线的忠实度为 **80%**、幻觉率为 **20%**；RAG 加自纠错后分别为 **100%** 和 **0%**（同模型裁判的离线结果，不代表线上零幻觉）。
+
+数字来自 [2026-08-22 离线评测记录](eval/MEASURED.md)。如需压缩成 3 条投递版，可优先保留“架构与意图”“检索质量”“兜底与护栏”；更多数字核对见[简历写法详解](docs/tutorial/01-项目总览/03-简历写法.md)。
+
 <a id="docs"></a>
 
 ## 🗺️ 从哪里继续阅读
@@ -183,6 +200,7 @@ cd frontend && npm test && npm run build
 | 查接口、配置、安全与可靠性 | [API](docs/06-api-reference.md) · [配置](docs/07-configuration.md) · [安全](docs/09-security.md) · [可靠性](docs/08-reliability.md) |
 | 核对实验口径与数字 | [评测方法](docs/10-evaluation.md) · [原始数字说明](eval/MEASURED.md) |
 | 系统学习 RAG 工程实践 | [12 部分教学文档](docs/tutorial/README.md) |
+| 准备 Agent/RAG 面试 | [Chapter 1](docs/interview/chapter1.md) · [Chapter 2](docs/interview/chapter2.md) · [Chapter 3](docs/interview/chapter3.md) · [17 维度索引](docs/16-interview-bagu-map.md) |
 
 完整索引见 [`docs/README.md`](docs/README.md)。源码可从 `app/asgi.py` → `app/services/chat_service.py` → `app/agents/graph.py` 开始读；Web 代码在 `frontend/src/`。
 

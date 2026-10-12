@@ -6,7 +6,7 @@
 >
 > **用词：** 「科学感知」对应论文里的 **query complexity-aware**（按问题复杂度选策略），不是「感知科学领域」。答辩时主动改口。
 >
-> 配套：[04 Adaptive-RAG](../04-adaptive-rag.md) · [15 解析切块](../15-ingest-and-retrieval.md) · [10 评测](../10-evaluation.md) · [14 测评报告](../14-evaluation-report.md) · [13 面试稿](../13-interview-engineering-rag.md) · [面试1](01-langgraph-planning-intent.md)（状态机 / 意图）
+> 正文先读 [Chapter 2 · 检索证据](chapter2.md)。配套：[04 Adaptive-RAG](../04-adaptive-rag.md) · [15 解析切块](../15-ingest-and-retrieval.md) · [10 评测](../10-evaluation.md) · [14 测评报告](../14-evaluation-report.md)。
 
 ## 本章目录
 
