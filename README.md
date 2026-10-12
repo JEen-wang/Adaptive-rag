@@ -247,25 +247,55 @@ cd frontend && npm test && npm run build
 | 系统学习 RAG 工程实践 | [12 部分教学文档](docs/tutorial/README.md) |
 | 准备 Agent/RAG 面试 | [Chapter 1](docs/interview/chapter1.md) · [Chapter 2](docs/interview/chapter2.md) · [Chapter 3](docs/interview/chapter3.md) · [17 维度索引](docs/16-interview-bagu-map.md) |
 
-### 项目教程 · 12 部分
+### 项目教程 · Chapter 对照表
 
-按“基础 → 检索质量 → 上下文 → 决策 → 安全 → 评测与上线”阅读；点击章节可进入正文，完整目录见[教学文档首页](docs/tutorial/README.md)。
+每行对应一篇独立文档；`chapter` 编号在各部分内从 1 开始。完整阅读顺序见[教学文档首页](docs/tutorial/README.md)。
 
-| 阶段 | 部分 | 主要内容 |
-|:---|:---|:---|
-| 总览 | [01 · 项目总览](docs/tutorial/01-项目总览/chapter1-说明.md) | [项目速览](docs/tutorial/01-项目总览/chapter2-项目速览.md) · [三分钟自述](docs/tutorial/01-项目总览/chapter3-三分钟自述.md) · [简历写法](docs/tutorial/01-项目总览/chapter4-简历写法.md) |
-| 打基础 | [02 · 向量表示](docs/tutorial/02-向量表示/chapter1-说明.md) | [向量与相似度](docs/tutorial/02-向量表示/chapter2-向量与相似度.md) |
-| 打基础 | [03 · 索引构建](docs/tutorial/03-索引构建/chapter1-说明.md) | [解析与清洗](docs/tutorial/03-索引构建/chapter2-解析与清洗.md) · [切块与稳定标识](docs/tutorial/03-索引构建/chapter3-切块与稳定标识.md) |
-| 打基础 | [04 · 召回](docs/tutorial/04-召回/chapter1-说明.md) | [BM25](docs/tutorial/04-召回/chapter2-稀疏召回BM25.md) · [稠密召回与向量库](docs/tutorial/04-召回/chapter3-稠密召回与向量库.md) |
-| 提质量 | [05 · 融合精排](docs/tutorial/05-融合精排/chapter1-说明.md) | [RRF 融合](docs/tutorial/05-融合精排/chapter2-RRF融合.md) · [Cross-Encoder 精排](docs/tutorial/05-融合精排/chapter3-Cross-Encoder精排.md) |
-| 提质量 | [06 · 查询改写](docs/tutorial/06-查询改写/chapter1-说明.md) | [查询改写与自适应](docs/tutorial/06-查询改写/chapter2-查询改写与自适应.md) · [Self-RAG 自纠错](docs/tutorial/06-查询改写/chapter3-Self-RAG自纠错.md) |
-| 管上下文 | [07 · 上下文与记忆](docs/tutorial/07-上下文与记忆/chapter1-说明.md) | [上下文组织与引用](docs/tutorial/07-上下文与记忆/chapter2-上下文组织与引用.md) · [会话记忆与三级压缩](docs/tutorial/07-上下文与记忆/chapter3-会话记忆与三级压缩.md) |
-| 做决策 | [08 · 意图与路由](docs/tutorial/08-意图与路由/chapter1-说明.md) | [意图识别](docs/tutorial/08-意图与路由/chapter2-意图识别.md) · [复杂度路由与五策略](docs/tutorial/08-意图与路由/chapter3-复杂度路由与五策略.md) |
-| 做决策 | [09 · 工作流与工具](docs/tutorial/09-工作流与工具/chapter1-说明.md) | [LangGraph 工作流与状态](docs/tutorial/09-工作流与工具/chapter2-LangGraph工作流与状态.md) · [工具调用、权限与幂等](docs/tutorial/09-工作流与工具/chapter3-工具调用权限与幂等.md) |
-| 控风险 | [10 · 安全护栏](docs/tutorial/10-安全护栏/chapter1-说明.md) | [人工确认 HITL](docs/tutorial/10-安全护栏/chapter2-人工确认HITL.md) · [护栏与安全](docs/tutorial/10-安全护栏/chapter3-护栏与安全.md) |
-| 拿证据 | [11 · 评测体系](docs/tutorial/11-评测体系/chapter1-说明.md) | [数据集与指标](docs/tutorial/11-评测体系/chapter2-数据集与指标.md) · [消融与口径陷阱](docs/tutorial/11-评测体系/chapter3-消融与口径陷阱.md) |
-| 上生产 | [12 · 工程化与上线](docs/tutorial/12-工程化与上线/chapter1-说明.md) | [可靠性与降级](docs/tutorial/12-工程化与上线/chapter2-可靠性与降级.md) · [可观测性](docs/tutorial/12-工程化与上线/chapter3-可观测性.md) · [部署与上线](docs/tutorial/12-工程化与上线/chapter4-部署与上线.md) |
-| 速查 | [附录](docs/tutorial/13-附录/chapter1-说明.md) | [术语表](docs/tutorial/13-附录/chapter2-术语表.md) · [环境变量](docs/tutorial/13-附录/chapter3-环境变量.md) · [练习答案](docs/tutorial/13-附录/chapter4-练习答案.md) · [源码阅读顺序](docs/tutorial/13-附录/chapter5-源码阅读顺序.md) · [完整测评数据表](docs/tutorial/13-附录/chapter6-完整测评数据表.md) |
+| 阶段 | 部分 | Chapter | 对应内容 |
+|:---|:---|:---|:---|
+| 总览 | 01 · 项目总览 | [chapter1 · 说明](docs/tutorial/01-项目总览/chapter1-说明.md) | 本部分导读与阅读顺序 |
+| 总览 | 01 · 项目总览 | [chapter2 · 项目速览](docs/tutorial/01-项目总览/chapter2-项目速览.md) | 项目背景、方案与结果速览 |
+| 总览 | 01 · 项目总览 | [chapter3 · 三分钟自述](docs/tutorial/01-项目总览/chapter3-三分钟自述.md) | 项目三分钟口播稿 |
+| 总览 | 01 · 项目总览 | [chapter4 · 简历写法](docs/tutorial/01-项目总览/chapter4-简历写法.md) | 简历条目与指标口径核对 |
+| 打基础 | 02 · 向量表示 | [chapter1 · 说明](docs/tutorial/02-向量表示/chapter1-说明.md) | 本部分导读与学习目标 |
+| 打基础 | 02 · 向量表示 | [chapter2 · 向量与相似度](docs/tutorial/02-向量表示/chapter2-向量与相似度.md) | 文本向量、相似度及语义匹配 |
+| 打基础 | 03 · 索引构建 | [chapter1 · 说明](docs/tutorial/03-索引构建/chapter1-说明.md) | 本部分导读与索引流程 |
+| 打基础 | 03 · 索引构建 | [chapter2 · 解析与清洗](docs/tutorial/03-索引构建/chapter2-解析与清洗.md) | 多格式文档解析与文本清洗 |
+| 打基础 | 03 · 索引构建 | [chapter3 · 切块与稳定标识](docs/tutorial/03-索引构建/chapter3-切块与稳定标识.md) | 切块策略、元数据与稳定标识 |
+| 打基础 | 04 · 召回 | [chapter1 · 说明](docs/tutorial/04-召回/chapter1-说明.md) | 本部分导读与召回路径 |
+| 打基础 | 04 · 召回 | [chapter2 · 稀疏召回BM25](docs/tutorial/04-召回/chapter2-稀疏召回BM25.md) | BM25 稀疏召回与分词 |
+| 打基础 | 04 · 召回 | [chapter3 · 稠密召回与向量库](docs/tutorial/04-召回/chapter3-稠密召回与向量库.md) | Embedding、稠密召回与向量库 |
+| 提质量 | 05 · 融合精排 | [chapter1 · 说明](docs/tutorial/05-融合精排/chapter1-说明.md) | 本部分导读与排序流程 |
+| 提质量 | 05 · 融合精排 | [chapter2 · RRF融合](docs/tutorial/05-融合精排/chapter2-RRF融合.md) | RRF 融合多路召回结果 |
+| 提质量 | 05 · 融合精排 | [chapter3 · Cross-Encoder精排](docs/tutorial/05-融合精排/chapter3-Cross-Encoder精排.md) | Cross-Encoder 候选精排 |
+| 提质量 | 06 · 查询改写 | [chapter1 · 说明](docs/tutorial/06-查询改写/chapter1-说明.md) | 本部分导读与复杂查询 |
+| 提质量 | 06 · 查询改写 | [chapter2 · 查询改写与自适应](docs/tutorial/06-查询改写/chapter2-查询改写与自适应.md) | 查询改写与自适应检索 |
+| 提质量 | 06 · 查询改写 | [chapter3 · Self-RAG自纠错](docs/tutorial/06-查询改写/chapter3-Self-RAG自纠错.md) | Self-RAG 证据评估与补检索 |
+| 管上下文 | 07 · 上下文与记忆 | [chapter1 · 说明](docs/tutorial/07-上下文与记忆/chapter1-说明.md) | 本部分导读与上下文管理 |
+| 管上下文 | 07 · 上下文与记忆 | [chapter2 · 上下文组织与引用](docs/tutorial/07-上下文与记忆/chapter2-上下文组织与引用.md) | 证据组织、引用与生成输入 |
+| 管上下文 | 07 · 上下文与记忆 | [chapter3 · 会话记忆与三级压缩](docs/tutorial/07-上下文与记忆/chapter3-会话记忆与三级压缩.md) | 滑动窗口、摘要与三级压缩 |
+| 做决策 | 08 · 意图与路由 | [chapter1 · 说明](docs/tutorial/08-意图与路由/chapter1-说明.md) | 本部分导读与路由策略 |
+| 做决策 | 08 · 意图与路由 | [chapter2 · 意图识别](docs/tutorial/08-意图与路由/chapter2-意图识别.md) | 客服意图识别与歧义处理 |
+| 做决策 | 08 · 意图与路由 | [chapter3 · 复杂度路由与五策略](docs/tutorial/08-意图与路由/chapter3-复杂度路由与五策略.md) | 复杂度判定与五种处理策略 |
+| 做决策 | 09 · 工作流与工具 | [chapter1 · 说明](docs/tutorial/09-工作流与工具/chapter1-说明.md) | 本部分导读与执行流程 |
+| 做决策 | 09 · 工作流与工具 | [chapter2 · LangGraph工作流与状态](docs/tutorial/09-工作流与工具/chapter2-LangGraph工作流与状态.md) | LangGraph 状态、节点与条件边 |
+| 做决策 | 09 · 工作流与工具 | [chapter3 · 工具调用权限与幂等](docs/tutorial/09-工作流与工具/chapter3-工具调用权限与幂等.md) | 工具调用、权限校验与幂等 |
+| 控风险 | 10 · 安全护栏 | [chapter1 · 说明](docs/tutorial/10-安全护栏/chapter1-说明.md) | 本部分导读与风险边界 |
+| 控风险 | 10 · 安全护栏 | [chapter2 · 人工确认HITL](docs/tutorial/10-安全护栏/chapter2-人工确认HITL.md) | 高风险写操作的人工确认 |
+| 控风险 | 10 · 安全护栏 | [chapter3 · 护栏与安全](docs/tutorial/10-安全护栏/chapter3-护栏与安全.md) | 输入护栏、拒答与答案校验 |
+| 拿证据 | 11 · 评测体系 | [chapter1 · 说明](docs/tutorial/11-评测体系/chapter1-说明.md) | 本部分导读与评测口径 |
+| 拿证据 | 11 · 评测体系 | [chapter2 · 数据集与指标](docs/tutorial/11-评测体系/chapter2-数据集与指标.md) | 评测数据集、指标及计算方法 |
+| 拿证据 | 11 · 评测体系 | [chapter3 · 消融与口径陷阱](docs/tutorial/11-评测体系/chapter3-消融与口径陷阱.md) | 消融实验与常见指标误读 |
+| 上生产 | 12 · 工程化与上线 | [chapter1 · 说明](docs/tutorial/12-工程化与上线/chapter1-说明.md) | 本部分导读与上线准备 |
+| 上生产 | 12 · 工程化与上线 | [chapter2 · 可靠性与降级](docs/tutorial/12-工程化与上线/chapter2-可靠性与降级.md) | 超时重试、错误语义与降级 |
+| 上生产 | 12 · 工程化与上线 | [chapter3 · 可观测性](docs/tutorial/12-工程化与上线/chapter3-可观测性.md) | 日志、追踪、指标与排障 |
+| 上生产 | 12 · 工程化与上线 | [chapter4 · 部署与上线](docs/tutorial/12-工程化与上线/chapter4-部署与上线.md) | 容器部署、依赖与上线检查 |
+| 速查 | 附录 | [chapter1 · 说明](docs/tutorial/13-附录/chapter1-说明.md) | 附录导读 |
+| 速查 | 附录 | [chapter2 · 术语表](docs/tutorial/13-附录/chapter2-术语表.md) | 常用术语速查 |
+| 速查 | 附录 | [chapter3 · 环境变量](docs/tutorial/13-附录/chapter3-环境变量.md) | 环境变量说明 |
+| 速查 | 附录 | [chapter4 · 练习答案](docs/tutorial/13-附录/chapter4-练习答案.md) | 教程练习答案 |
+| 速查 | 附录 | [chapter5 · 源码阅读顺序](docs/tutorial/13-附录/chapter5-源码阅读顺序.md) | 源码阅读路线 |
+| 速查 | 附录 | [chapter6 · 完整测评数据表](docs/tutorial/13-附录/chapter6-完整测评数据表.md) | 完整评测数据表 |
 
 完整索引见 [`docs/README.md`](docs/README.md)。源码可从 `app/asgi.py` → `app/services/chat_service.py` → `app/agents/graph.py` 开始读；Web 代码在 `frontend/src/`。
 
