@@ -24,18 +24,9 @@ from app.tools.permissions import WRITE_RISKS, assert_permitted
 from app.tools.registry import ToolRegistry
 
 READ_FALLBACKS: dict[str, list[str]] = {
-    "get_order": ["search_knowledge"],
-    "get_order_items": ["get_order", "search_knowledge"],
-    "track_shipment": ["get_order", "search_knowledge"],
-    "get_product_detail": ["search_products", "search_knowledge"],
-    "search_products": ["search_knowledge"],
-    "recommend_products": ["search_products", "search_knowledge"],
-    "get_coupon": ["search_knowledge"],
-    "get_warranty": ["search_knowledge"],
-    "get_refund_status": ["search_knowledge"],
-    "check_inventory": ["search_products", "search_knowledge"],
-    "mcp_store_hours": ["search_knowledge"],
-    "mcp_warehouse_cutoff": ["search_knowledge"],
+    "track_shipment": ["get_order"],
+    "get_product_detail": ["search_products"],
+    "recommend_products": ["search_products"],
 }
 
 

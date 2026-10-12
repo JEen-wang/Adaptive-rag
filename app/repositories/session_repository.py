@@ -3,6 +3,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import InvalidRequestError
 from app.core.time import utcnow
 from app.repositories.models import MessageRow, SessionRow
 from app.schemas.chat import ChatMessage
@@ -18,6 +19,8 @@ class SessionRepository:
             row = SessionRow(session_id=session_id, user_id=user_id)
             self._session.add(row)
             await self._session.flush()
+        elif row.user_id != user_id:
+            raise InvalidRequestError("会话不可用，请新建会话。")
         return row
 
     async def recent_messages(self, session_id: str, *, limit: int = 20) -> list[ChatMessage]:

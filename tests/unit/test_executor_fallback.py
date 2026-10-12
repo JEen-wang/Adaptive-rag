@@ -34,17 +34,39 @@ class _Knowledge(Tool):
 
 
 @pytest.mark.asyncio
-async def test_read_tool_falls_back_to_knowledge() -> None:
+async def test_order_lookup_failure_does_not_fall_back_to_policy() -> None:
     registry = ToolRegistry()
     registry.register(_FailingOrder())
     registry.register(_Knowledge())
+    with pytest.raises(ToolExecutionError, match="order lookup failed"):
+        await execute_with_fallback(
+            registry.get("get_order"),
+            PlanStep(step_id=1, goal="order", tool_name="get_order", arguments={"query": "x"}),
+            ToolContext(user_id="u", session_id="s", trace_id="t"),
+            registry,
+            "定制杯还能退吗",
+        )
+
+
+class _FailingShipment(_FailingOrder):
+    name = "track_shipment"
+
+
+class _Order(_Knowledge):
+    name = "get_order"
+
+
+@pytest.mark.asyncio
+async def test_shipment_failure_uses_order_status_fallback() -> None:
+    registry = ToolRegistry()
+    registry.register(_FailingShipment())
+    registry.register(_Order())
     result = await execute_with_fallback(
-        registry.get("get_order"),
-        PlanStep(step_id=1, goal="order", tool_name="get_order", arguments={"query": "x"}),
+        registry.get("track_shipment"),
+        PlanStep(step_id=1, goal="shipment", tool_name="track_shipment", arguments={"query": "x"}),
         ToolContext(user_id="u", session_id="s", trace_id="t"),
         registry,
-        "定制杯还能退吗",
+        "物流到哪了",
     )
-    assert result.success is True
-    assert result.name == "search_knowledge"
-    assert result.output["fallback_from"] == "get_order"
+    assert result.name == "get_order"
+    assert result.output["fallback_from"] == "track_shipment"
