@@ -38,7 +38,7 @@ async def test_order_lookup_failure_does_not_fall_back_to_policy() -> None:
     registry = ToolRegistry()
     registry.register(_FailingOrder())
     registry.register(_Knowledge())
-    with pytest.raises(ToolExecutionError, match="order lookup failed"):
+    with pytest.raises(ToolExecutionError, match="get_order failed"):
         await execute_with_fallback(
             registry.get("get_order"),
             PlanStep(step_id=1, goal="order", tool_name="get_order", arguments={"query": "x"}),
