@@ -9,7 +9,7 @@
   <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white">
   <img alt="LangGraph" src="https://img.shields.io/badge/LangGraph-0.2-6E4AFF">
   <img alt="Pydantic" src="https://img.shields.io/badge/Pydantic-v2-E92063?logo=pydantic&logoColor=white">
-  <img alt="pytest" src="https://img.shields.io/badge/pytest-154_passed-0A9EDC?logo=pytest&logoColor=white">
+  <img alt="pytest" src="https://img.shields.io/badge/pytest-155_passed-0A9EDC?logo=pytest&logoColor=white">
   <img alt="coverage" src="https://img.shields.io/badge/coverage-73%25-2EA043">
   <img alt="mypy" src="https://img.shields.io/badge/mypy-clean-2A6DB2">
   <img alt="CI" src="https://img.shields.io/badge/CI-GitHub_Actions-2088FF?logo=githubactions&logoColor=white">
@@ -120,6 +120,7 @@ pip install -e ".[rerank]"
 pip install -e ".[docs]"
 
 cp .env.example .env
+python -m scripts.seed_demo  # 可选：初始化下方演示订单
 uvicorn app.asgi:app --reload --port 8000
 ```
 
@@ -146,7 +147,7 @@ curl -s localhost:8000/api/v1/chat \
 python -m app.cli
 ```
 
-仓库预置了三个订单用于演示工具调用与人工确认流程：
+运行 `python -m scripts.seed_demo` 后会创建三个属于 `u_demo` 的演示订单，用于体验工具调用与人工确认流程；服务启动本身不会自动写入演示数据：
 
 | 订单号 | 状态 | 商品 |
 |---|---|---|
@@ -176,9 +177,9 @@ python -m eval.runner --task retrieval
 | 生成忠实度 | 65 条 | 无检索 80% → RAG 96.9% → RAG + 自纠错 **100%** |
 | 生成幻觉率 | 65 条 | 无检索 20% → RAG 3.1% → RAG + 自纠错 **0%** |
 | 端到端 | 16 条 | 拒答 100% · 工具路径 100% · 关键词 9/11 · P50 4.9s / P95 5.8s |
-| 回归测试 | 154 项 | `pytest -q` **154 passed**，覆盖率 **73%**（2026-10-10 复测） |
+| 回归测试 | 155 项 | `pytest -q` **155 passed**，覆盖率 **73%**（2026-10-12 复测） |
 
-有五个口径容易被误读，这里主动说明。意图的 100% 含一层规则覆盖，不是纯 LLM 分类器的成绩；本集上 RRF 与仅用 bge-small 的数字相同，**增益实际来自 Cross-Encoder 而非融合**，所以不宣称 RRF 必然优于单路；端到端关键词命中是 9/11 而不是 100%；幻觉评测使用同模型裁判，结论偏乐观；回归测试那一行是 2026-10-10 单独复测的，与上面 2026-08-22 的评测指标不是同一次运行，当天下午补了 `eval` 指标与检索核心路径的单测后由 75 增至 154。
+有五个口径容易被误读，这里主动说明。意图的 100% 含一层规则覆盖，不是纯 LLM 分类器的成绩；本集上 RRF 与仅用 bge-small 的数字相同，**增益实际来自 Cross-Encoder 而非融合**，所以不宣称 RRF 必然优于单路；端到端关键词命中是 9/11 而不是 100%；幻觉评测使用同模型裁判，结论偏乐观；回归测试一行是 2026-10-12 单独复测的，与上面 2026-08-22 的评测指标不是同一次运行。
 
 ## 文档
 

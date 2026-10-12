@@ -24,6 +24,7 @@ pip install -e ".[dev]"
 # 系统包：poppler、tesseract（含 chi_sim）、Office 还需 libreoffice
 # 首次请求会加载 BAAI/bge-small-zh-v1.5（~90MB）与 BAAI/bge-reranker-base（国内可设 HF_ENDPOINT）
 cp .env.example .env
+python -m scripts.seed_demo  # 需要演示订单时执行一次，可安全重跑
 ```
 
 `.env` 最小集：
@@ -47,7 +48,7 @@ python -m app.cli
 
 ### 要点
 
-`lifespan` 调用 `build_container`：建表、ingest `knowledge/`、seed 演示订单、编译 Graph。
+`lifespan` 调用 `build_container`：建表、ingest `knowledge/`、编译 Graph。演示订单由上面的显式命令创建，API 启动不自动 seed。
 
 ### 代码摘要
 
@@ -55,7 +56,7 @@ python -m app.cli
 # app/main.py
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    container = await build_container(get_settings())  # ingest + seed + 编译图
+    container = await build_container(get_settings())  # ingest + 编译图
     app.state.container = container
     try:
         yield
@@ -64,12 +65,9 @@ async def lifespan(app: FastAPI):
 ```
 
 ```python
-# app/services/seed.py
-async def seed_demo_data(session: AsyncSession) -> None:
-    exists = await session.get(OrderRow, "ORD10001")
-    if exists is not None:
-        return
-    # 写入 SKU-HEADSET / SKU-MUG-CUSTOM / SKU-TEE 与三张订单
+# scripts/seed_demo.py
+async with factory.begin() as session:
+    await seed_demo_data(session)  # 只补缺失的演示行
 ```
 
 ## 探活与第一问
@@ -95,7 +93,7 @@ curl -s localhost:8000/api/v1/chat \
 | `ORD10002` | 已签收 | 定制马克杯 |
 | `ORD10003` | 已支付未发货 | T 恤 |
 
-用户 `u_demo`。取消未发货会返回 `pending_action`：
+先运行 `python -m scripts.seed_demo`，然后使用用户 `u_demo`。取消未发货会返回 `pending_action`：
 
 ```bash
 curl -s localhost:8000/api/v1/chat \
