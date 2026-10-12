@@ -127,24 +127,69 @@ PY
 ## 🏗️ 系统架构
 
 ```mermaid
-flowchart LR
-    U["用户 · Web / CLI / HTTP"] --> API["FastAPI · JSON / SSE"]
-    API --> S["ChatService"]
-    S --> G["LangGraph：护栏 → 意图 → 复杂度路由"]
-    G --> D["DIRECT"]
-    G --> R["SINGLE / MULTI"]
-    G --> A["AGENT"]
-    G --> F["REFUSE"]
-    R --> H["BM25 + 向量 → RRF → 精排"]
-    A --> T["权限校验 → 工具 → 人工确认"]
-    D --> O["生成 / 忠实度检查"]
-    H --> O
-    T --> O
-    F --> O
-    O --> X["回答 + 引用 + trace_id"]
+flowchart TD
+    START["🚀 启动服务"] --> INIT["⚙️ 加载配置并装配 ChatService"]
+    INIT --> INGEST["📚 全量构建知识索引"]
+    INGEST --> READY["✅ API 就绪"]
+
+    subgraph KB["知识库准备 · 启动时"]
+        DOCS["FAQ / 退货 / 配送等文档"] --> PARSE["解析 · 清洗 · 切分 · 去重"]
+        PARSE --> BM25["BM25 索引"]
+        PARSE --> EMBED["Embedding 向量化"] --> VECTOR["Qdrant / 内存向量索引"]
+    end
+    INGEST -.-> DOCS
+
+    READY --> USER["👤 Web / CLI / HTTP 提问"]
+    USER --> API["FastAPI · JSON / SSE"]
+    API --> GUARD["🛡️ 输入护栏与查询边界"]
+    GUARD -->|通过| INTENT["🧠 DeepSeek 意图识别 + 歧义规则覆盖"]
+    GUARD -->|拒绝| REFUSE["拒答 / 转人工提示"]
+    INTENT --> ROUTE{"🎯 Adaptive 路由<br/>意图 + 问题复杂度"}
+    ROUTE -->|DIRECT| DIRECT["直接生成"]
+    ROUTE -->|SINGLE| SINGLE["查询改写 · 单轮检索"]
+    ROUTE -->|MULTI| MULTI["Self-RAG 式循环<br/>改写 · 检索 · 证据评估"]
+    ROUTE -->|AGENT| PLAN["规划器 · Skill 选择 · 子任务分解"]
+    ROUTE -->|REFUSE| REFUSE
+
+    subgraph RETRIEVAL["混合检索 · 证据链"]
+        SEARCH["BM25 + 向量召回"] --> FUSE["RRF 融合去重"] --> RERANK["Cross-Encoder 精排"]
+    end
+    BM25 -.-> SEARCH
+    VECTOR -.-> SEARCH
+    SINGLE --> SEARCH
+    RERANK -->|单轮结果| GEN["📝 生成回答"]
+    MULTI -->|逐轮调用| SEARCH
+    RERANK -->|多轮结果| MULTI
+    MULTI -->|证据充分或达到跳数上限| GEN
+
+    PLAN --> EXEC["执行器 · 统一工具注册表"]
+    EXEC -->|只读工具失败| FALLBACK["备用工具 / 知识检索"] --> GEN
+    EXEC -->|查询成功| GEN
+    EXEC -->|写操作| CONFIRM["权限校验 · 待用户确认"] --> GEN
+    EXEC -.-> TOOLS["订单 / 物流 / 商品 / MCP 工具"]
+
+    DIRECT --> GEN
+    GEN --> CHECK["🔍 忠实度检查 · 必要时自纠错"]
+    CHECK --> MEMORY["🧠 128k 预算 · 滑动窗口 · 动态摘要"]
+    REFUSE --> MEMORY
+    MEMORY --> OUTPUT["📤 回答 / 引用 / 待确认动作 / trace_id"]
+    OUTPUT --> USER
+
+    classDef setup fill:#e8f5e9,stroke:#2e7d32,color:#173b1b
+    classDef routing fill:#e3f2fd,stroke:#1565c0,color:#123a63
+    classDef retrieve fill:#f3e5f5,stroke:#7b1fa2,color:#442051
+    classDef tool fill:#fff3e0,stroke:#ef6c00,color:#613600
+    classDef output fill:#e0f7fa,stroke:#00838f,color:#12494d
+    classDef fallback fill:#ffebee,stroke:#c62828,color:#63272a
+    class START,INIT,INGEST,READY,DOCS,PARSE,BM25,EMBED,VECTOR setup
+    class INTENT,ROUTE,DIRECT,SINGLE,MULTI routing
+    class SEARCH,FUSE,RERANK,GEN,CHECK retrieve
+    class PLAN,EXEC,CONFIRM,TOOLS tool
+    class API,USER,MEMORY,OUTPUT output
+    class GUARD,REFUSE,FALLBACK fallback
 ```
 
-HTTP 层处理校验与序列化，`ChatService` 编排对话，Graph 决定路径，检索器与工具由容器装配。默认数据库为 SQLite；Redis、Qdrant 和远程模型按配置接入。完整的节点、降级路径和依赖关系见[架构与运行流程](docs/17-architecture-flow.md)。
+图按“启动与索引准备 → 查询分析与路由 → 检索或工具执行 → 生成、校验与记忆”展开，结构组织参考 [Datawhale《图 RAG 系统架构》3.1 节](https://github.com/datawhalechina/all-in-rag/blob/main/docs/chapter9/01_graph_rag_architecture.md#31-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84)。本项目的多跳路径基于文本检索和证据评估；默认数据库为 SQLite，Redis、Qdrant 和远程模型按配置接入。完整节点与降级路径见[架构与运行流程](docs/17-architecture-flow.md)。
 
 <a id="evaluation"></a>
 
@@ -186,7 +231,7 @@ cd frontend && npm test && npm run build
 - **记忆与扩展：** 实现 128k Token 预算的滑动窗口和动态摘要，在上下文利用率达到 50%、70%、85% 时逐级收紧工具结果并触发自动压缩；通过 Skill 定义按需选择退货、订单跟踪和推荐流程，将本地与 MCP 工具接入统一的工具注册表。
 - **兜底与护栏：** 在规划和只读工具执行层设置降级路径，并加入查询边界、权限校验、写操作人工确认、答案忠实度检查及自纠错。65 条生成评测中，无检索基线的忠实度为 **80%**、幻觉率为 **20%**；RAG 加自纠错后分别为 **100%** 和 **0%**（同模型裁判的离线结果，不代表线上零幻觉）。
 
-数字来自 [2026-08-22 离线评测记录](eval/MEASURED.md)。如需压缩成 3 条投递版，可优先保留“架构与意图”“检索质量”“兜底与护栏”；更多数字核对见[简历写法详解](docs/tutorial/01-项目总览/03-简历写法.md)。
+数字来自 [2026-08-22 离线评测记录](eval/MEASURED.md)。如需压缩成 3 条投递版，可优先保留“架构与意图”“检索质量”“兜底与护栏”；更多数字核对见[简历写法详解](docs/tutorial/01-项目总览/chapter4-简历写法.md)。
 
 <a id="docs"></a>
 
@@ -201,6 +246,26 @@ cd frontend && npm test && npm run build
 | 核对实验口径与数字 | [评测方法](docs/10-evaluation.md) · [原始数字说明](eval/MEASURED.md) |
 | 系统学习 RAG 工程实践 | [12 部分教学文档](docs/tutorial/README.md) |
 | 准备 Agent/RAG 面试 | [Chapter 1](docs/interview/chapter1.md) · [Chapter 2](docs/interview/chapter2.md) · [Chapter 3](docs/interview/chapter3.md) · [17 维度索引](docs/16-interview-bagu-map.md) |
+
+### 项目教程 · 12 部分
+
+按“基础 → 检索质量 → 上下文 → 决策 → 安全 → 评测与上线”阅读；点击章节可进入正文，完整目录见[教学文档首页](docs/tutorial/README.md)。
+
+| 阶段 | 部分 | 主要内容 |
+|:---|:---|:---|
+| 总览 | [01 · 项目总览](docs/tutorial/01-项目总览/chapter1-说明.md) | [项目速览](docs/tutorial/01-项目总览/chapter2-项目速览.md) · [三分钟自述](docs/tutorial/01-项目总览/chapter3-三分钟自述.md) · [简历写法](docs/tutorial/01-项目总览/chapter4-简历写法.md) |
+| 打基础 | [02 · 向量表示](docs/tutorial/02-向量表示/chapter1-说明.md) | [向量与相似度](docs/tutorial/02-向量表示/chapter2-向量与相似度.md) |
+| 打基础 | [03 · 索引构建](docs/tutorial/03-索引构建/chapter1-说明.md) | [解析与清洗](docs/tutorial/03-索引构建/chapter2-解析与清洗.md) · [切块与稳定标识](docs/tutorial/03-索引构建/chapter3-切块与稳定标识.md) |
+| 打基础 | [04 · 召回](docs/tutorial/04-召回/chapter1-说明.md) | [BM25](docs/tutorial/04-召回/chapter2-稀疏召回BM25.md) · [稠密召回与向量库](docs/tutorial/04-召回/chapter3-稠密召回与向量库.md) |
+| 提质量 | [05 · 融合精排](docs/tutorial/05-融合精排/chapter1-说明.md) | [RRF 融合](docs/tutorial/05-融合精排/chapter2-RRF融合.md) · [Cross-Encoder 精排](docs/tutorial/05-融合精排/chapter3-Cross-Encoder精排.md) |
+| 提质量 | [06 · 查询改写](docs/tutorial/06-查询改写/chapter1-说明.md) | [查询改写与自适应](docs/tutorial/06-查询改写/chapter2-查询改写与自适应.md) · [Self-RAG 自纠错](docs/tutorial/06-查询改写/chapter3-Self-RAG自纠错.md) |
+| 管上下文 | [07 · 上下文与记忆](docs/tutorial/07-上下文与记忆/chapter1-说明.md) | [上下文组织与引用](docs/tutorial/07-上下文与记忆/chapter2-上下文组织与引用.md) · [会话记忆与三级压缩](docs/tutorial/07-上下文与记忆/chapter3-会话记忆与三级压缩.md) |
+| 做决策 | [08 · 意图与路由](docs/tutorial/08-意图与路由/chapter1-说明.md) | [意图识别](docs/tutorial/08-意图与路由/chapter2-意图识别.md) · [复杂度路由与五策略](docs/tutorial/08-意图与路由/chapter3-复杂度路由与五策略.md) |
+| 做决策 | [09 · 工作流与工具](docs/tutorial/09-工作流与工具/chapter1-说明.md) | [LangGraph 工作流与状态](docs/tutorial/09-工作流与工具/chapter2-LangGraph工作流与状态.md) · [工具调用、权限与幂等](docs/tutorial/09-工作流与工具/chapter3-工具调用权限与幂等.md) |
+| 控风险 | [10 · 安全护栏](docs/tutorial/10-安全护栏/chapter1-说明.md) | [人工确认 HITL](docs/tutorial/10-安全护栏/chapter2-人工确认HITL.md) · [护栏与安全](docs/tutorial/10-安全护栏/chapter3-护栏与安全.md) |
+| 拿证据 | [11 · 评测体系](docs/tutorial/11-评测体系/chapter1-说明.md) | [数据集与指标](docs/tutorial/11-评测体系/chapter2-数据集与指标.md) · [消融与口径陷阱](docs/tutorial/11-评测体系/chapter3-消融与口径陷阱.md) |
+| 上生产 | [12 · 工程化与上线](docs/tutorial/12-工程化与上线/chapter1-说明.md) | [可靠性与降级](docs/tutorial/12-工程化与上线/chapter2-可靠性与降级.md) · [可观测性](docs/tutorial/12-工程化与上线/chapter3-可观测性.md) · [部署与上线](docs/tutorial/12-工程化与上线/chapter4-部署与上线.md) |
+| 速查 | [附录](docs/tutorial/13-附录/chapter1-说明.md) | [术语表](docs/tutorial/13-附录/chapter2-术语表.md) · [环境变量](docs/tutorial/13-附录/chapter3-环境变量.md) · [练习答案](docs/tutorial/13-附录/chapter4-练习答案.md) · [源码阅读顺序](docs/tutorial/13-附录/chapter5-源码阅读顺序.md) · [完整测评数据表](docs/tutorial/13-附录/chapter6-完整测评数据表.md) |
 
 完整索引见 [`docs/README.md`](docs/README.md)。源码可从 `app/asgi.py` → `app/services/chat_service.py` → `app/agents/graph.py` 开始读；Web 代码在 `frontend/src/`。
 
@@ -240,6 +305,10 @@ docs/             技术手册与教学文档
 - 知识库启动时全量 ingest，尚无增量删除接口；Embedding / 精排权重不可用时会降级，降级后的效果未单独评测。
 
 更多实现边界与后续方向见[限制与路线图](docs/12-limitations.md)。
+
+## ⭐ Star 统计
+
+[![Star History Chart](https://api.star-history.com/svg?repos=JEen-wang/Adaptive-rag&type=Date)](https://www.star-history.com/?repos=JEen-wang%2FAdaptive-rag&type=date)
 
 ## 🤝 参与贡献
 
