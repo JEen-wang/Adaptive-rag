@@ -2,16 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Check, Copy, ShieldCheck } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import type { ActionProposal, Citation, Conversation, Message, Strategy } from "../types";
+import type { ActionProposal, Citation, Conversation, Message } from "../types";
 import { Logo } from "./Logo";
-
-const STRATEGY_LABEL: Record<Strategy, string> = {
-  direct: "直接回答",
-  single: "单跳检索",
-  multi: "多跳检索",
-  agent: "工具处理",
-  refuse: "安全拒答",
-};
 
 function CitationList({ citations }: { citations: Citation[] }) {
   const unique = citations.filter((item, index, all) => all.findIndex((other) => other.chunk_id === item.chunk_id) === index);
@@ -27,7 +19,7 @@ function CitationList({ citations }: { citations: Citation[] }) {
 function ActionCard({ action, onConfirm, onCancel, disabled }: { action: ActionProposal; onConfirm: () => void; onCancel: () => void; disabled: boolean }) {
   return <div className="action-card">
     <div className="action-icon"><ShieldCheck size={19} /></div>
-    <div className="action-content"><strong>需要你的确认</strong><p>{action.summary}</p><small>操作：{action.tool_name}</small>
+    <div className="action-content"><strong>需要你的确认</strong><p>{action.summary}</p>
       <div className="action-buttons"><button className="confirm-button" disabled={disabled} onClick={onConfirm}>确认执行</button><button className="cancel-button" disabled={disabled} onClick={onCancel}>取消</button></div>
     </div>
   </div>;
@@ -63,7 +55,7 @@ export function MessageView({ conversation, busy, onConfirm, onCancel }: Message
             {message.state === "complete" && <>
               <CitationList citations={message.citations ?? []} />
               {message.pendingAction && <ActionCard action={message.pendingAction} disabled={busy} onConfirm={() => onConfirm(message.pendingAction!, message.id)} onCancel={() => onCancel(message.id)} />}
-              <div className="message-tools"><button aria-label="复制回答" title="复制回答" onClick={() => void copy(message)}>{copiedId === message.id ? <Check size={16} /> : <Copy size={16} />}</button>{message.strategy && <span>{STRATEGY_LABEL[message.strategy]}</span>}{typeof message.latencyMs === "number" && <span>{(message.latencyMs / 1000).toFixed(1)} 秒</span>}</div>
+              <div className="message-tools"><button aria-label="复制回答" title="复制回答" onClick={() => void copy(message)}>{copiedId === message.id ? <Check size={16} /> : <Copy size={16} />}</button></div>
             </>}
             {message.state === "stopped" && <span className="message-note">生成已停止</span>}
           </div>

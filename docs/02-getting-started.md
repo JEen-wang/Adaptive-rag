@@ -14,7 +14,7 @@
 ## 环境与安装
 
 - Python **3.11+**（验证过 3.12）
-- 可选 `DEEPSEEK_API_KEY`（没有则 `FakeLLMProvider`，流程通，回答是占位 JSON）
+- 可选 `DEEPSEEK_API_KEY`（没有则进入离线演示模式，显示检索原文或可核对的业务状态）
 
 ```bash
 python3.12 -m venv .venv
@@ -48,7 +48,7 @@ python -m app.cli
 
 ### 要点
 
-`lifespan` 调用 `build_container`：建表、ingest `knowledge/`、seed 演示订单、编译 Graph。
+`lifespan` 调用 `build_container`：建表、ingest `knowledge/`、编译 Graph。演示订单需要按下文手动写入。
 
 ### 代码摘要
 
@@ -56,7 +56,7 @@ python -m app.cli
 # app/main.py
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    container = await build_container(get_settings())  # ingest + seed + 编译图
+    container = await build_container(get_settings())  # ingest + 编译图
     app.state.container = container
     try:
         yield
@@ -98,14 +98,16 @@ curl -s localhost:8000/api/v1/chat \
 
 用户 `u_demo`。取消未发货会返回 `pending_action`：
 
+默认启动不会写入演示订单。请先按[首页 README 的演示数据步骤](../README.md)执行一次 `build_container(get_settings(), seed=True)`，再启动 API。
+
 ```bash
 curl -s localhost:8000/api/v1/chat \
   -H 'content-type: application/json' \
   -d '{"message":"取消订单ORD10003","user_id":"u_demo"}'
-# 把 pending_action.action_id 填回：
+# 把上次响应的 session_id 和 pending_action.action_id 一起填回：
 curl -s localhost:8000/api/v1/chat \
   -H 'content-type: application/json' \
-  -d '{"message":"确认取消","user_id":"u_demo","confirm_action_id":"act_..."}'
+  -d '{"message":"确认取消","user_id":"u_demo","session_id":"sess_...","confirm_action_id":"act_..."}'
 ```
 
 机制见 [05 · HITL](05-agents-and-tools.md#hitl-与幂等)。

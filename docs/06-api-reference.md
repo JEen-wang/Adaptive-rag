@@ -1,6 +1,6 @@
 # 06 · API 参考
 
-> 一句话：业务拒答可以 HTTP 200；系统故障走 4xx/5xx + `error_code`。流式是 SSE，`token` 来自 DeepSeek stream。
+> 一句话：业务拒答可以 HTTP 200；系统故障走 4xx/5xx + `error_code`。流式接口使用 SSE，`token` 只包含完成校验后的可展示答案。
 
 ## 本章目录
 
@@ -81,7 +81,7 @@ SSE。事件 JSON：
 |---|---|
 | `started` | 请求受理 |
 | `node` | LangGraph 节点完成（如 `classify_intent`） |
-| `token` | 生成节点 DeepSeek 增量 |
+| `token` | 最终答案经忠实度检查后分段发送；不包含模型的 JSON 包装或内部字段 |
 | `answer` | 最终 `ChatResponse` |
 | `done` | 结束 |
 

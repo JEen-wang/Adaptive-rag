@@ -6,7 +6,9 @@ import time
 
 from app.agents.nodes.intent import IntentClassifier
 from app.agents.state import AgentState
+from app.core.enums import QueryComplexity, RetrievalStrategy
 from app.retrieval.adaptive import AdaptiveRouter
+from app.schemas.agent import ComplexityResult
 from app.schemas.common import LatencyBreakdown
 
 
@@ -26,7 +28,16 @@ async def router_node(state: AgentState, router: AdaptiveRouter) -> dict:
     started = time.perf_counter()
     intent = state["intent"]
     assert intent is not None
-    complexity = await router.route(state["user_query"], intent)
+    complexity = (
+        ComplexityResult(
+            complexity=QueryComplexity.TOOL_REQUIRED,
+            strategy=RetrievalStrategy.AGENT,
+            confidence=1.0,
+            rationale="confirmed_action",
+        )
+        if state.get("confirmed_action")
+        else await router.route(state["user_query"], intent)
+    )
     latency = _latency(state)
     latency.routing_ms = (time.perf_counter() - started) * 1000
     return {

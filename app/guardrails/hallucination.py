@@ -50,5 +50,4 @@ class FaithfulnessChecker:
             )
             return parse_model(response.content, FaithfulnessResult)
         except (LLMProviderError, LLMOutputError):
-            # Fail closed on empty evidence + assertive answer is handled by caller.
-            return FaithfulnessResult(supported=True, rationale="checker_unavailable")
+            return FaithfulnessResult(supported=False, rationale="checker_unavailable")

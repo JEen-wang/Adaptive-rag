@@ -65,6 +65,10 @@ def test_chat_stream_emits_token_and_node_events() -> None:
         if line and line != "[DONE]" and line.startswith("{")
     ]
     assert any(item.get("event") == "answer" for item in parsed)
+    final = next(item["data"] for item in parsed if item.get("event") == "answer")
+    tokens = "".join(item["text"] for item in parsed if item.get("event") == "token")
+    assert tokens == final["answer"]
+    assert '"label":"faq_policy"' not in joined
 
 
 def test_admin_tools_open_in_testing() -> None:
