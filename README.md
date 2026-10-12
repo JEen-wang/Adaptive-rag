@@ -1,8 +1,4 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="docs/assets/hero-light.svg">
-  <img alt="Adaptive RAG：按问题复杂度选择回答、检索、工具或拒答路径的电商客服系统" src="docs/assets/hero-light.svg" width="100%">
-</picture>
+
 
 <h1 align="center">Adaptive RAG · 多智能体电商客服</h1>
 
