@@ -139,10 +139,9 @@ async def create_plan(self, query, intent_label, summary):
 ```python
 # app/agents/nodes/executor.py
 READ_FALLBACKS = {
-    "get_order": ["search_knowledge"],
-    "track_shipment": ["get_order", "search_knowledge"],
-    "mcp_store_hours": ["search_knowledge"],
-    ...
+    "track_shipment": ["get_order"],
+    "get_product_detail": ["search_products"],
+    "recommend_products": ["search_products"],
 }
 
 async def execute_with_fallback(tool, step, context, registry, query):
@@ -162,6 +161,7 @@ async def execute_with_fallback(tool, step, context, registry, query):
 ```
 
 工具入口统一 `Tool.run`：先 `input_model` 校验，再 `execute`。这是 **执行层 Fallback**。
+只有语义相近的只读工具会回退；订单、退款、库存等结构化查询失败时不会拿通用政策片段代替业务数据。
 
 单测：`tests/unit/test_executor_fallback.py`。
 

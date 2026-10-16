@@ -54,7 +54,7 @@ class HybridRetriever:
         except Exception as exc:
             dense_error = exc
             logger.exception("vector_search_failed")
-        if not lexical and not dense:
+        if lexical_error is not None and dense_error is not None:
             raise RetrievalError("both lexical and dense retrievers failed") from (
                 dense_error or lexical_error
             )

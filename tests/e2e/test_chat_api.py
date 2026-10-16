@@ -45,6 +45,19 @@ def test_empty_message_is_invalid_request() -> None:
         assert body["trace_id"]
 
 
+def test_session_cannot_be_reused_by_another_user() -> None:
+    with _client() as client:
+        first = client.post("/api/v1/chat", json={"message": "你好", "user_id": "u_first"})
+        assert first.status_code == 200
+        session_id = first.json()["session_id"]
+        second = client.post(
+            "/api/v1/chat",
+            json={"message": "上一条说了什么？", "user_id": "u_other", "session_id": session_id},
+        )
+        assert second.status_code == 400
+        assert second.json()["error_code"] == "INVALID_REQUEST"
+
+
 def test_chat_stream_emits_token_and_node_events() -> None:
     with _client() as client:
         with client.stream(

@@ -84,6 +84,8 @@ async def run(self, arguments, context) -> ToolResult:
 
 订单对非属主统一「不存在」，包括 `u_demo` 与 `anonymous`；只有订单的 `user_id` 与请求中的值一致才可读写。演示单只属于 `u_demo`。当前 API 尚无身份认证，请求方仍能自行填写 `user_id`，因此不能直接暴露给不可信客户端；生产部署须在可信网关完成认证并绑定用户身份，不能依赖请求体中的 `user_id` 做授权。
 
+复用 `session_id` 时，后端也会核对会话记录里的 `user_id`；不匹配的请求不会读取历史消息。该检查依赖请求中声明的 `user_id`，不能代替上面的身份认证。
+
 `order_id` 正则 `^[A-Za-z0-9_-]+$`。SQL 绑定参数；`ILIKE` 转义 `%` `_`。
 
 ## 写操作
