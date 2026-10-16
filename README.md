@@ -17,7 +17,8 @@
   <a href="#overview">项目亮点</a> · <a href="#quickstart">快速开始</a> ·
   <a href="#architecture">系统架构</a> · <a href="#evaluation">实测结果</a> ·
   <a href="#resume">简历写法</a> ·
-  <a href="#docs">完整文档</a> · <a href="#limitations">使用边界</a>
+  <a href="#docs">完整文档</a> · <a href="#limitations">使用边界</a> ·
+  <a href="#roadmap">后续路线图</a>
 </p>
 
 ---
@@ -248,6 +249,41 @@ docs/             技术手册与教学文档
 - 知识库启动时全量 ingest，尚无增量删除接口；Embedding / 精排权重不可用时会降级，降级后的效果未单独评测。
 
 更多实现边界与后续方向见[限制与路线图](docs/12-limitations.md)。
+
+<a id="roadmap"></a>
+
+## 🧭 后续完善与优化路线图
+
+以下是基于当前代码整理的待办，**不是已经完成的功能**。先解决身份、会话和写操作的正确性，再改善知识库更新、响应速度与云端演示体验。
+
+### 1. 上线前先补齐
+
+| 优先级 | 改进项 | 目标与代码入口 |
+|:---:|:---|:---|
+| P0 | **身份与会话隔离** | 不再信任请求体中的 `user_id`；读取已有会话时校验所属用户，避免跨用户读取历史。[请求模型](app/schemas/chat.py) · [会话仓储](app/repositories/session_repository.py) |
+| P0 | **云端部署边界** | 移除数据库、Redis、Qdrant 的公网端口映射和固定密码；只开放受控的 Web/API 入口。[Compose](docker-compose.yml) |
+| P0 | **真正接入多轮记忆** | 回答生成目前只使用当前问题，初始摘要为空，压缩发生在回答之后；应把历史与摘要按预算送入生成、路由和规划。[对话服务](app/services/chat_service.py) · [生成节点](app/agents/nodes/generate.py) · [记忆节点](app/agents/nodes/memory.py) |
+| P1 | **可靠的人工确认** | 待确认操作从进程内字典迁移到持久化存储，支持过期、一次性消费和多副本。[对话服务](app/services/chat_service.py) · [执行节点](app/agents/nodes/executor.py) |
+| P1 | **准确呈现服务状态** | 区分 API 存活与模型、向量库就绪；Embedding 或精排降级时在接口和页面明确提示。[健康检查](app/api/routes/health.py) · [模型装配](app/services/container.py) |
+
+### 2. 提升功能与体验
+
+| 方向 | 改进项 | 预期效果 |
+|:---|:---|:---|
+| 知识库 | 增量入库、删除同步、文档版本与缓存失效；避免旧向量和旧引用残留。[入库](app/retrieval/ingest.py) · [向量库](app/retrieval/vector.py) | 政策更新后，检索结果与引用保持一致。 |
+| 文档解析 | 在需要 PDF、Office、图片入库的镜像中安装解析依赖与系统包，并报告解析失败的文件。[解析器](app/retrieval/unstructured_parser.py) · [Dockerfile](Dockerfile) | 非 Markdown 文档不再被静默跳过。 |
+| 响应体验 | 明确显示检索、生成、核验进度；当前 SSE 在答案核验完成后才分块输出。[SSE](app/services/chat_service.py) · [前端请求](frontend/src/lib/api.ts) | 用户能看懂等待发生在哪一步。 |
+| 速度与成本 | 记录每个节点的耗时、调用次数和 Token 用量，为简单问题设置快速路径，为多跳检索设置预算。[工作流](app/agents/graph.py) · [指标](app/observability/metrics.py) | 减少不必要的模型调用。 |
+| 首次演示 | 让首页示例问题与演示订单初始化保持一致，并提供一键准备演示数据的入口。[首页](frontend/src/App.tsx) · [种子数据](app/services/seed.py) | 打开页面即可验证订单与确认流程。 |
+| 模型启动 | 预热本地 Embedding 与精排模型，持久化权重缓存，显示加载或降级状态。[Embedding](app/providers/embeddings.py) · [精排](app/providers/reranker.py) | 减少首问等待和重建后的重复下载。 |
+| 前端会话 | 将仅存于 `localStorage` 的会话与服务端历史打通，并增加断线重连状态。[本地存储](frontend/src/lib/storage.ts) | 刷新、换设备后仍可继续对话。 |
+
+### 3. 工程化与复杂改造
+
+1. **数据库迁移：** 启动时使用 `create_all`，应改为部署时运行 Alembic，并验证升级和回滚。[数据库初始化](app/repositories/db.py)
+2. **完整回归链路：** 在现有 Python CI 上补充前端测试、Docker 构建，以及覆盖问答、引用、订单查询、人工确认的端到端测试。[CI](.github/workflows/ci.yml)
+3. **通用 MCP 与真实业务接入：** 当前远程工具通过固定 HTTP JSON 接口调用；若要对接通用 MCP 服务或真实订单、物流系统，还需处理能力发现、认证、权限、超时和审计。[MCP 适配器](app/mcp/runtime.py) · [业务工具](app/tools/)
+4. **一致性设计：** 多轮摘要不能覆盖最新事实；写操作确认时要重新核对订单状态；知识库更新时 BM25、向量、缓存和引用应切到同一版本。这三处适合分别做设计和故障测试。
 
 ## ⭐ Star 统计
 
