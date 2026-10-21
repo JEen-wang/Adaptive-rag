@@ -302,4 +302,4 @@ docs/             技术手册与教学文档
 <p align="center">
   <sub>从一个问题开始，沿着策略、证据、工具与指标追到代码。<br>
   指标口径以 <a href="eval/MEASURED.md">eval/MEASURED.md</a> 为准。</sub>
-</p>
+</p>.
