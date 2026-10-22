@@ -33,11 +33,14 @@ export async function streamChat(
     signal,
   });
   if (!response.ok) {
-    let message = `请求失败（HTTP ${response.status}）`;
+    let message = response.status >= 500
+      ? "服务暂时不可用，请稍后重试。"
+      : `请求失败（HTTP ${response.status}）`;
     try {
       const error: unknown = await response.json();
       if (typeof error === "object" && error !== null && "message" in error) {
-        message = String(error.message);
+        const detail = String(error.message);
+        message = detail === "internal error" ? "服务暂时不可用，请稍后重试。" : detail;
       }
   } catch { /* Use the HTTP status when no JSON error body is available. */ }
     throw new Error(message);

@@ -83,7 +83,11 @@ async def capabilities(
     cache = "redis" if container.redis is not None else "memory"
     vector_store_type = type(container.vector_store).__name__ if container.vector_store else "none"
     vector_store = "memory" if vector_store_type == "InMemoryVectorStore" else vector_store_type
-    retriever = "hybrid" if container.settings.embedding_configured or container.settings.local_embedding_configured else "bm25"
+    retriever = (
+        "hybrid"
+        if container.settings.embedding_configured or container.settings.local_embedding_configured
+        else "bm25"
+    )
     degraded = any(
         value in {"offline", "memory", "none", "lexical", "bm25"}
         for value in (llm, cache, vector_store, reranker, retriever)

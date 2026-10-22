@@ -94,6 +94,10 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px
 .connection-pill { display: inline-flex; align-items: center; gap: 7px; padding: 7px 10px; color: var(--muted); background: var(--sidebar); border: 1px solid var(--soft-border); border-radius: 999px; font-size: 11px; white-space: nowrap; }
 .connection-pill > span { display: block; width: 6px; height: 6px; border-radius: 50%; background: #16a085; box-shadow: 0 0 0 3px rgba(22, 160, 133, .12); }
 .connection-pill.offline > span { background: #d66161; box-shadow: 0 0 0 3px rgba(214, 97, 97, .12); }
+.service-banner { width: min(820px, calc(100% - 56px)); margin: 0 auto 8px; padding: 10px 14px; display: flex; align-items: center; gap: 8px; border: 1px solid #f0c7c7; border-radius: 11px; background: #fff6f6; color: #a44747; font-size: 12px; }
+.service-banner span { color: #b66b6b; }
+:root[data-theme="dark"] .service-banner { border-color: #663d3d; background: #321f1f; color: #f0a6a6; }
+:root[data-theme="dark"] .service-banner span { color: #d28d8d; }
 .open-sidebar { display: none; }
 .sidebar-collapsed .open-sidebar { display: inline-flex; }
 
