@@ -66,3 +66,4 @@ logs/
 # Local scratch
 *.tmp
 scratch/
+.node/
