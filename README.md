@@ -297,7 +297,19 @@ docs/             技术手册与教学文档
 
 ## 🧭 后续完善与优化路线图
 
-以下是基于当前代码整理的待办，**不是已经完成的功能**。先解决身份、会话和写操作的正确性，再改善知识库更新、响应速度与云端演示体验。
+下面先列出已经落地的优化，再列出尚待推进的工作。路线仍按身份、会话和写操作正确性、知识库更新、响应速度与云端演示体验排序。
+
+### 已完成的优化
+
+| 状态 | 已完成项 | 结果与入口 |
+|:---:|:---|:---|
+| ✅ | **三档 Docker 部署** | 默认 SQLite + BM25 演示、PostgreSQL + Redis 单机、PostgreSQL + Redis + Qdrant 多实例模式。[Compose 文件](docker-compose.yml) · [部署说明](docs/11-deployment.md) |
+| ✅ | **本地开发启动脚本** | PowerShell 一键启动 API 与 Vite 前端，默认使用 8002 / 5173，也支持自定义端口。[启动脚本](scripts/dev-start.ps1) |
+| ✅ | **运行状态与能力探测** | 增加 liveness、readiness 和 capabilities 接口，报告数据库、缓存、向量库、检索、精排和 LLM 实际后端。[健康检查](app/api/routes/health.py) |
+| ✅ | **降级路径可见化** | Redis、向量库、Embedding、精排和生成模型不可用时继续运行，并记录启动时实际运行模式。[容器装配](app/services/container.py) |
+| ✅ | **跨平台文档 ID 稳定** | 文档 ID 改为基于知识库相对路径生成，避免 Windows、Linux 与 Docker 因绝对路径不同产生重复向量。[切块](app/retrieval/chunking.py) |
+| ✅ | **前端连接错误提示** | API 未启动或请求失败时显示用户可理解的中文提示，隐藏内部错误文本；前端 API 地址支持 `VITE_API_BASE`。[前端请求](frontend/src/lib/api.ts) |
+| ✅ | **工程质量门禁** | CI 已覆盖 Python 3.11 / 3.12 的 Ruff、mypy、pytest 和覆盖率检查；前端构建已验证。[CI](.github/workflows/ci.yml) |
 
 ### 1. 上线前先补齐
 
