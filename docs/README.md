@@ -34,6 +34,7 @@
 | Docker | [11](11-deployment.md) | `docker-compose.yml` |
 | 写掘金/面试长文 | [13](13-interview-engineering-rag.md) | 对照仓库的「玩具 vs 工程化」 |
 | 项目面试书 | [目录](interview/README.md) | 三章连续讲述请求、证据与行动 |
+| 简历拷打 / 高频追问 | [项目拷打](project-deep-dive.md) | 34 题，含新手答/高手答对照与指标口径 |
 | 面试维度索引 | [16](16-interview-bagu-map.md) | zero2Agent 17 维度 ↔ 三章与实现边界 |
 
 ## 章节
