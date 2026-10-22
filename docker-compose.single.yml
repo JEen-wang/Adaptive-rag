@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: cs
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD before starting}
+      POSTGRES_DB: adaptive_rag_cs
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cs -d adaptive_rag_cs"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      args:
+        INSTALL_RERANK: "true"
+    container_name: adaptive-rag-single
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://cs:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD before starting}@postgres:5432/adaptive_rag_cs
+      REDIS_URL: redis://redis:6379/0
+      QDRANT_URL: ""
+      APP_ENV: production
+      LOG_LEVEL: INFO
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      LOCAL_EMBEDDING_ENABLED: ${LOCAL_EMBEDDING_ENABLED:-true}
+      CROSS_ENCODER_ENABLED: ${CROSS_ENCODER_ENABLED:-true}
+      UNSTRUCTURED_ENABLED: ${UNSTRUCTURED_ENABLED:-false}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres-data:

@@ -1,6 +1,6 @@
 # 11 · 部署与运维
 
-> 一句话：本地 SQLite 即可开发；Compose 里 Postgres 是硬依赖，Redis/Qdrant 软依赖；`.env` 不进镜像。
+> 一句话：默认 Compose 使用 SQLite 和内置检索，单个容器即可启动 API 与 Web；Redis、Qdrant、Postgres 仍可按需接入；`.env` 不进镜像。
 
 ## 本章目录
 
@@ -16,15 +16,30 @@ SQLite + 内存向量，见 [02](02-getting-started.md)。
 ## Docker Compose
 
 ```bash
-cp .env.example .env
-docker compose up --build
+docker compose up --build -d
 ```
+
+启动后访问 `http://127.0.0.1:8000`，停止服务使用 `docker compose down`。数据保存在 Compose volume `adaptive-rag-data` 中。
+
+### 三种运行模式
+
+| 模式 | Compose 文件 | 组件 | 适用场景 |
+|---|---|---|---|
+| 默认演示 | `docker-compose.yml` | API、前端、SQLite | 最少依赖，自动降级 |
+| 单机生产 | `docker-compose.single.yml` | API、前端、PostgreSQL、Redis | 单节点长期运行 |
+| 多实例生产 | `docker-compose.multi.yml` | Nginx、双 API、PostgreSQL、Redis、Qdrant | 扩容和共享状态 |
+
+```bash
+# 单机和多实例模式先设置数据库密码
+export POSTGRES_PASSWORD='change-this-password'
+docker compose -f docker-compose.single.yml up --build -d
+docker compose -f docker-compose.multi.yml up --build -d
+```
+
+单机和多实例镜像会安装 `.[rerank]`。启用本地 Embedding / Cross-Encoder 时，首次启动可能下载模型；没有 LLM 密钥时仍会使用离线证据回答。
 
 | 容器 | 作用 | API 依赖 |
 |---|---|---|
-| `postgres` | 订单/会话/幂等 | **硬**（healthy 后才起 API） |
-| `redis` | 限流、缓存 | 软 |
-| `qdrant` | 向量 | 软；连不上内存库 |
 | `api` | FastAPI | 8000 |
 
 ### 代码摘要
@@ -32,19 +47,11 @@ docker compose up --build
 ```yaml
 # docker-compose.yml
 api:
-  env_file: [.env]          # 密钥不打进镜像
   environment:
-    DATABASE_URL: postgresql+asyncpg://cs:cs@postgres:5432/adaptive_rag_cs
-    REDIS_URL: redis://redis:6379/0
-    QDRANT_URL: http://qdrant:6333
+    DATABASE_URL: sqlite+aiosqlite:///./data/local/app.db
+    REDIS_URL: ""
+    QDRANT_URL: ""
     APP_ENV: production
-  depends_on:
-    postgres:
-      condition: service_healthy
-    redis:
-      condition: service_started
-    qdrant:
-      condition: service_started
 ```
 
 健康检查打 `http://127.0.0.1:8000/api/v1/health`。镜像非 root，先 COPY 再 `pip install .`。

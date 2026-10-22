@@ -57,6 +57,32 @@
 
 ## 🚀 快速开始
 
+### Docker 一键启动
+
+已安装 Docker Desktop 时，在项目根目录执行：
+
+```powershell
+docker compose up --build -d
+```
+
+启动后访问 **http://127.0.0.1:8000**，API 文档在 **http://127.0.0.1:8000/docs**。停止服务：
+
+```powershell
+docker compose down
+```
+
+默认使用 SQLite 和内置词法检索，不需要 PostgreSQL、Redis、Qdrant 或外部 API 密钥。设置 `DEEPSEEK_API_KEY` 后可启用生成式回答，例如 PowerShell 中执行 `$env:DEEPSEEK_API_KEY="你的密钥"; docker compose up --build -d`。
+
+按部署规模选择 Compose 文件：
+
+| 模式 | 启动命令 | 适用场景 |
+|---|---|---|
+| 默认演示 | `docker compose up --build -d` | SQLite、内存缓存/向量，最快启动 |
+| 单机生产 | `docker compose -f docker-compose.single.yml up --build -d` | PostgreSQL、Redis、单个 API |
+| 多实例生产 | `docker compose -f docker-compose.multi.yml up --build -d` | PostgreSQL、Redis、Qdrant、双 API 实例和 Nginx |
+
+单机和多实例模式需要先设置 `POSTGRES_PASSWORD`，并建议配置 `DEEPSEEK_API_KEY`；启用本地 Embedding / Cross-Encoder 时首次构建和启动会下载模型，建议预留较大的磁盘和内存。
+
 默认使用 SQLite 和内存检索组件，不要求先部署 Redis 或 Qdrant。需要 **Python 3.11+**；Web 开发另需满足[前端 Node.js 要求](frontend/README.md)。
 
 ### 1. 安装并启动 API
