@@ -13,7 +13,7 @@
   <img alt="React and TypeScript" src="https://img.shields.io/badge/Web-React%20%2B%20TypeScript-149eca?logo=react&logoColor=white">
 
 ---
-
+## 📷 项目快照
 <p align="center">
   <img src="docs/assets/frontend-snapshot.webp" alt="Adaptive RAG Web 工作台：多条件退货提问，回答附带三条政策来源引用" width="900">
 </p>
