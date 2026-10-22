@@ -32,16 +32,16 @@
 
 | 维度 | 玩具版通常怎么做 | 本项目的做法 | 关键实现 |
 |:---|:---|:---|:---|
-| 🧭 **路由** | 所有问题都走向量检索 | 五路分流，问候不检索，越权直接拒答 | [策略路由](app/retrieval/adaptive.py) |
-| 🔎 **召回** | 单路向量 top-k | BM25 + 稠密向量 + RRF 融合 + Cross-Encoder 精排 | [混合检索](app/retrieval/hybrid.py) |
-| 🧩 **多跳** | 一次检索定结果 | 改写与补检，最多 3 跳 | [Self-RAG](app/retrieval/self_rag.py) |
-| 🛡️ **写操作** | 模型直接调用工具 | 参数校验、权限、待确认、幂等与审计 | [工具与权限](app/tools/) |
-| 🚫 **幻觉** | 生成后直接返回 | 引用绑定、忠实度检查、自纠错、证据不足拒答 | [忠实度](app/agents/nodes/faithfulness.py) |
-| 🧯 **依赖故障** | 任一依赖不可用即失败 | 分层降级，`/capabilities` 报告实际后端 | [容器装配](app/services/container.py) |
-| 💬 **上下文** | 历史全量拼进 Prompt | 128k 预算与三级压缩 | [记忆](app/memory/) |
-| 📈 **评测** | 手动试几句 | 3 套离线集与可复现的口径 | [评测](eval/MEASURED.md) |
-| 🧱 **工程化** | 本地脚本跑通即完成 | 双版本 CI 门禁、三档部署、健康检查与指标 | [CI](.github/workflows/ci.yml) · [部署](docs/11-deployment.md) |
-| ⚠️ **边界** | 默认宣称可用 | 明确列出未完成项 | [使用边界](#limitations) |
+| **路由** | 所有问题都走向量检索 | 五路分流，问候不检索，越权直接拒答 | [策略路由](app/retrieval/adaptive.py) |
+| **召回** | 单路向量 top-k | BM25 + 稠密向量 + RRF 融合 + Cross-Encoder 精排 | [混合检索](app/retrieval/hybrid.py) |
+| **多跳** | 一次检索定结果 | 改写与补检，最多 3 跳 | [Self-RAG](app/retrieval/self_rag.py) |
+| **写操作** | 模型直接调用工具 | 参数校验、权限、待确认、幂等与审计 | [工具与权限](app/tools/) |
+| **幻觉** | 生成后直接返回 | 引用绑定、忠实度检查、自纠错、证据不足拒答 | [忠实度](app/agents/nodes/faithfulness.py) |
+| **依赖故障** | 任一依赖不可用即失败 | 分层降级，`/capabilities` 报告实际后端 | [容器装配](app/services/container.py) |
+| **上下文** | 历史全量拼进 Prompt | 128k 预算与三级压缩 | [记忆](app/memory/) |
+| **评测** | 手动试几句 | 3 套离线集与可复现的口径 | [评测](eval/MEASURED.md) |
+| **工程化** | 本地脚本跑通即完成 | 双版本 CI 门禁、三档部署、健康检查与指标 | [CI](.github/workflows/ci.yml) · [部署](docs/11-deployment.md) |
+| **边界** | 默认宣称可用 | 明确列出未完成项 | [使用边界](#limitations) |
 
 前四行决定答得对不对，中间三行决定故障时能不能退，最后三行决定别人能不能接手和验证。
 
@@ -58,12 +58,12 @@
 
 | 能力 | 你能看到什么 | 关键实现 |
 |:---|:---|:---|
-| 🧭 **按复杂度路由** | 每次回答带有 `strategy`，便于追踪实际路径 | [Graph 与节点](app/agents/graph.py) · [策略枚举](app/core/enums.py) |
-| 🔎 **有出处的检索** | BM25、稠密向量、RRF 融合与精排；回答可带 `citations` | [检索模块](app/retrieval/) |
-| 🧩 **多跳与自纠错** | 复合问题拆分检索，答案经过忠实度检查 | [智能体节点](app/agents/nodes/) |
-| 🛡️ **人工确认** | 高风险写操作先返回 `pending_action`，确认后才执行 | [工具与权限](app/tools/) |
-| 💬 **Web 对话工作台** | 流式显示、引用、本地会话搜索、深色模式与确认卡片 | [前端](frontend/) |
-| 📈 **可测可观测** | 离线评测、回归测试、结构化日志与 Prometheus 指标 | [评测](eval/) · [可观测性](app/observability/) |
+| **按复杂度路由** | 每次回答带有 `strategy`，便于追踪实际路径 | [Graph 与节点](app/agents/graph.py) · [策略枚举](app/core/enums.py) |
+| **有出处的检索** | BM25、稠密向量、RRF 融合与精排；回答可带 `citations` | [检索模块](app/retrieval/) |
+| **多跳与自纠错** | 复合问题拆分检索，答案经过忠实度检查 | [智能体节点](app/agents/nodes/) |
+| **人工确认** | 高风险写操作先返回 `pending_action`，确认后才执行 | [工具与权限](app/tools/) |
+| **Web 对话工作台** | 流式显示、引用、本地会话搜索、深色模式与确认卡片 | [前端](frontend/) |
+| **可测可观测** | 离线评测、回归测试、结构化日志与 Prometheus 指标 | [评测](eval/) · [可观测性](app/observability/) |
 
 ### 五条处理路径
 
