@@ -129,6 +129,15 @@ async def build_container(settings: Settings, seed: bool = False) -> AppContaine
         async with session_factory() as session:
             await seed_demo_data(session)
             await session.commit()
+    logger.info(
+        "runtime_ready database=%s cache=%s vector_store=%s llm=%s local_embedding=%s cross_encoder=%s",
+        "sqlite" if settings.use_sqlite else "postgresql",
+        "redis" if redis is not None else "memory",
+        type(store).__name__,
+        "deepseek" if settings.llm_configured else "offline",
+        settings.local_embedding_configured,
+        settings.cross_encoder_configured,
+    )
     return AppContainer(
         settings=settings,
         llm=llm,

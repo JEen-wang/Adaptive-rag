@@ -39,7 +39,7 @@ DEEPSEEK_API_KEY=sk-...   # 可选，演示质量依赖它
 不要提交 `.env`。
 
 ```bash
-uvicorn app.asgi:app --reload --port 8000
+uvicorn app.asgi:app --reload --port 8002
 python -m app.cli
 ```
 
@@ -74,9 +74,9 @@ async with factory.begin() as session:
 ## 探活与第一问
 
 ```bash
-curl -s localhost:8000/api/v1/health
-curl -s localhost:8000/api/v1/ready
-curl -s localhost:8000/api/v1/chat \
+curl -s localhost:8002/api/v1/health
+curl -s localhost:8002/api/v1/ready
+curl -s localhost:8002/api/v1/chat \
   -H 'content-type: application/json' \
   -d '{"message":"定制马克杯过了7天但是有质量问题能退吗","user_id":"u_demo"}'
 ```
@@ -97,11 +97,11 @@ curl -s localhost:8000/api/v1/chat \
 先运行 `python -m scripts.seed_demo`，然后使用用户 `u_demo`。取消未发货会返回 `pending_action`：
 
 ```bash
-curl -s localhost:8000/api/v1/chat \
+curl -s localhost:8002/api/v1/chat \
   -H 'content-type: application/json' \
   -d '{"message":"取消订单ORD10003","user_id":"u_demo"}'
 # 把上次响应的 session_id 和 pending_action.action_id 一起填回：
-curl -s localhost:8000/api/v1/chat \
+curl -s localhost:8002/api/v1/chat \
   -H 'content-type: application/json' \
   -d '{"message":"确认取消","user_id":"u_demo","session_id":"sess_...","confirm_action_id":"act_..."}'
 ```
@@ -119,7 +119,7 @@ python -m eval.runner --task retrieval
 
 ## Web 前端
 
-保持 API 在 8000 端口运行，另开终端：
+保持 API 在 8002 端口运行，另开终端：
 
 ```bash
 cd frontend
@@ -127,7 +127,7 @@ npm ci
 npm run dev
 ```
 
-打开 `http://127.0.0.1:5173`。Vite 会将 `/api` 代理到 8000 端口；生产构建由 `npm run build` 生成，FastAPI 检测到 `frontend/dist` 后会在 `/` 提供页面。前端实现和本地会话存储限制见 [`frontend/README.md`](../frontend/README.md)。
+打开 `http://127.0.0.1:5173`。Vite 会将 `/api` 代理到 8002 端口；生产构建由 `npm run build` 生成，FastAPI 检测到 `frontend/dist` 后会在 `/` 提供页面。前端实现和本地会话存储限制见 [`frontend/README.md`](../frontend/README.md)。
 
 下一步：[11 · 部署](11-deployment.md)、[06 · API](06-api-reference.md)。
 

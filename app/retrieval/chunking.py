@@ -20,9 +20,13 @@ def stable_chunk_id(document_id: str, chunk_index: int) -> str:
     return f"{document_id}_{chunk_index:02d}"
 
 
-def document_id_from_path(path: Path) -> str:
+def document_id_from_path(path: Path, *, root: Path | None = None) -> str:
     stem = path.stem.lower().replace(" ", "_")
-    digest = hashlib.sha1(str(path.resolve()).encode("utf-8")).hexdigest()[:8]
+    # IDs must be independent of the checkout location (Windows, Linux, Docker).
+    # Prefer the path relative to the knowledge root; filename is the stable fallback.
+    identity_path = path.relative_to(root) if root is not None else Path(path.name)
+    identity = identity_path.as_posix().lower()
+    digest = hashlib.sha1(identity.encode("utf-8")).hexdigest()[:8]
     return f"{stem}_{digest}"
 
 

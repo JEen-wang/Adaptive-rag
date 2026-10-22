@@ -18,3 +18,15 @@ class DependencyStatus(BaseModel):
 class ReadinessResponse(BaseModel):
     ready: bool
     dependencies: list[DependencyStatus] = Field(default_factory=list)
+
+
+class CapabilitiesResponse(BaseModel):
+    """Resolved runtime backends and whether the process is degraded."""
+
+    database: str
+    cache: str
+    vector_store: str
+    retriever: str
+    reranker: str
+    llm: str
+    degraded: bool

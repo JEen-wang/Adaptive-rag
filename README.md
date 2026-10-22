@@ -111,7 +111,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 cp .env.example .env
-uvicorn app.asgi:app --reload --port 8000
+uvicorn app.asgi:app --reload --port 8002
 ```
 
 Windows PowerShell 激活虚拟环境可使用 `.venv\Scripts\Activate.ps1`。首次启用本地 Embedding / Cross-Encoder 时可能需要下载模型；需要完整的本地精排依赖可安装 `pip install -e ".[rerank]"`。更多选项见[配置参考](docs/07-configuration.md)。
@@ -121,8 +121,8 @@ Windows PowerShell 激活虚拟环境可使用 `.venv\Scripts\Activate.ps1`。�
 ### 2. 发送第一条消息
 
 ```bash
-curl -s http://127.0.0.1:8000/api/v1/health
-curl -s http://127.0.0.1:8000/api/v1/chat \
+curl -s http://127.0.0.1:8002/api/v1/health
+curl -s http://127.0.0.1:8002/api/v1/chat \
   -H 'content-type: application/json' \
   -d '{"message":"定制马克杯过了七天，但有质量问题还能退吗？","user_id":"u_demo"}'
 ```

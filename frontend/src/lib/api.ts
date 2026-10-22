@@ -1,4 +1,4 @@
-import type { ChatRequest, StreamEvent } from "../types";
+import type { Capabilities, ChatRequest, StreamEvent } from "../types";
 import { SseDecoder } from "./sse";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "";
@@ -9,6 +9,15 @@ export async function checkHealth(signal?: AbortSignal): Promise<boolean> {
     return response.ok;
   } catch {
     return false;
+  }
+}
+
+export async function getCapabilities(signal?: AbortSignal): Promise<Capabilities | null> {
+  try {
+    const response = await fetch(`${API_BASE}/api/v1/capabilities`, { signal });
+    return response.ok ? await response.json() as Capabilities : null;
+  } catch {
+    return null;
   }
 }
 
@@ -30,7 +39,7 @@ export async function streamChat(
       if (typeof error === "object" && error !== null && "message" in error) {
         message = String(error.message);
       }
-    } catch { /* Use the HTTP status when no JSON error body is available. */ }
+  } catch { /* Use the HTTP status when no JSON error body is available. */ }
     throw new Error(message);
   }
   if (!response.body) throw new Error("浏览器不支持流式响应");

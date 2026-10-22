@@ -81,7 +81,7 @@ class KnowledgeIngestor:
         chunks: list[RetrievedChunk] = []
         for path in files:
             category = category_for_stem(path.stem)
-            document_id = document_id_from_path(path)
+            document_id = document_id_from_path(path, root=self._knowledge_dir)
             title = path.stem
             file_chunks = await asyncio.to_thread(
                 parse_path,

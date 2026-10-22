@@ -36,6 +36,16 @@ export interface ChatRequest {
   confirm_action_id?: string;
 }
 
+export interface Capabilities {
+  database: string;
+  cache: string;
+  vector_store: string;
+  retriever: string;
+  reranker: string;
+  llm: string;
+  degraded: boolean;
+}
+
 export type StreamEvent =
   | { event: "started"; trace_id: string }
   | { event: "node"; node: string; intent?: string; strategy?: Strategy }

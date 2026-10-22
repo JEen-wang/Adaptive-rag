@@ -18,7 +18,7 @@
 |---|---|---|
 | 01 架构选型 | [Chapter 1](interview/chapter1.md) | LangGraph、五策略路由、一次计划后顺序执行 |
 | 02 工具管理 | [Chapter 3](interview/chapter3.md) | ToolRegistry、参数校验、Skill、HITL、MCP |
-| 03 容错与鲁棒性 | [Chapter 3](interview/chapter3.md) | 可重试错误退避、读工具降级、护栏与忠实度 |
+| 03 容错与鲁棒性 | [Chapter 3](interview/chapter3.md) | LLM/Qdrant/Redis 超时与瞬时错误采用有上限的 full-jitter 重试；检索、精排和生成均有可核验的降级路径；工具参数校验、权限检查、人工确认与幂等键防止误操作；输入护栏、证据引用、忠实度检查和证据不足拒答共同抑制幻觉 |
 | 04 记忆与上下文 | [Chapter 3](interview/chapter3.md) | 会话存储与三级压缩；无长期向量记忆 |
 | 05 评估与全局观 | [Chapter 2](interview/chapter2.md) → [Chapter 3](interview/chapter3.md) | 意图、检索、生成和 E2E 分任务评测 |
 | 06 多智能体协作 | [Chapter 1](interview/chapter1.md) | 单图多节点；**无多 Agent 团队** |
