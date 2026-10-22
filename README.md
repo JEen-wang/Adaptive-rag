@@ -14,9 +14,9 @@
 </p>
 
 <p align="center">
-  <a href="#overview">项目亮点</a> · <a href="#quickstart">快速开始</a> ·
-  <a href="#architecture">系统架构</a> · <a href="#evaluation">实测结果</a> ·
-  <a href="#resume">简历写法</a> ·
+  <a href="#overview">项目亮点</a> · <a href="#resume">简历写法</a> ·
+  <a href="#quickstart">快速开始</a> · <a href="#architecture">系统架构</a> ·
+  <a href="#evaluation">实测结果</a> ·
   <a href="#docs">完整文档</a> · <a href="#limitations">使用边界</a> ·
   <a href="#roadmap">后续路线图</a>
 </p>
@@ -52,6 +52,33 @@
 
 > [!TIP]
 > 第一次了解项目，可以先看[架构图](#architecture)，再按[快速开始](#quickstart)提问。想看每条路径怎样落到代码，读[智能体与工具](docs/05-agents-and-tools.md)。
+
+<a id="resume"></a>
+
+## 📝 简历写法
+
+> **📖 项目深挖 / 面试拷打**：写完简历先读 [《简历项目拷打：34 个高频追问与真实回答》](docs/project-deep-dive.md)。
+> 每题按「新手答 → 高手答 → 追问 → 差距在哪」组织，覆盖路由、检索、工具权限、记忆、降级、指标口径，每个回答都能落到具体代码和 `eval/MEASURED.md` 的数字上；文末附三分钟自述、答题框架与「绝对不能说的 6 句话」。
+
+**基于 Adaptive-RAG 的电商客服**
+
+**项目概述：** 针对基于 FAQ 的传统客服系统长尾问题命中率极低，人工介入成本高的问题和常规 RAG 多跳推理能力差，幻觉问题严重的痛点设计并实现了基于 Adaptive-RAG 的多智能体电商客服系统。
+
+- **架构设计：** 基于 LangGraph 搭建核心状态机，规划器与执行器，统一接入 15 个核心工具，实现流式输出与指数退避+抖动重试；解析意图识别，采用 Prompt-template+DeepSeek v3 构建意图路由节点并通过 LLM 自主决策分解子任务并调用工具，自建 100 条测试 query 测试意图识别准确率达到 97%。
+
+- **检索阶段：** FAQ、退货策略、配送说明等文档进行预处理、切分、向量化索引。基于 Adaptive-RAG 实现科学感知的逻辑路由，动态调度检索策略，并通过问题改写和混合检索，解决多跳问题。
+
+- **检索优化：** 基于 Self-RAG 构建多轮检索策略，并利用 RRF 算法对多源异构检索结果进行融合与去重，随后调用 Cohere 模型进行重排序。
+
+  **Precision 58%→85%，Recall 63%→91%，Faithfulness 54%→88%，幻觉率下降 62%。**
+
+- **上下文压缩与记忆管理：** 针对长会话导致的 Token 冗余及成本问题，开发 128k Token 预算管理模块（滑动窗口 + 动态摘要）；实现 3 层压缩流水线，在上下文利用率在 50%~70% 时自动收紧工具结果体积，>85% 时触发 auto-compact，达到从轻量级截断到全量摘要逐级递进的渐进式压缩。
+
+- **Skill + MCP 的可插拔能力体系：** 支持按需加载退货处理、订单跟踪、商品推荐等标准化技能流程，并将本地工具与远程 MCP 工具统一为 Function Calling 接口。
+
+- **兜底与护栏机制：** 设计任务分解和工具执行层双向引入 Fallback 机制；部署查询边界、幻觉检测与自纠错重试机制，将幻觉率控制在 4% 以下。
+
+> **仓库实现说明：** 上述文字按简历原文展示。当前代码未接入 Cohere API，实际使用轻量级 `BAAI/bge-small-zh-v1.5` 做向量检索、本地 `BAAI/bge-reranker-base` 做精排；所列简历指标与仓库的[实测报告](eval/MEASURED.md)口径不同。Cohere Rerank 试用 API 密钥有免费限额，正式 API 使用按量收费，详见 [Cohere 定价说明](https://cohere.com/pricing)。
 
 <a id="quickstart"></a>
 
@@ -215,33 +242,6 @@ python -m pytest -q
 python -m eval.runner --task retrieval
 cd frontend && npm test && npm run build
 ```
-
-<a id="resume"></a>
-
-## 📝 简历写法
-
-> **📖 项目深挖 / 面试拷打**：写完简历先读 [《简历项目拷打：34 个高频追问与真实回答》](docs/project-deep-dive.md)。
-> 每题按「新手答 → 高手答 → 追问 → 差距在哪」组织，覆盖路由、检索、工具权限、记忆、降级、指标口径，每个回答都能落到具体代码和 `eval/MEASURED.md` 的数字上；文末附三分钟自述、答题框架与「绝对不能说的 6 句话」。
-
-**基于 Adaptive-RAG 的电商客服**
-
-**项目概述：** 针对基于 FAQ 的传统客服系统长尾问题命中率极低，人工介入成本高的问题和常规 RAG 多跳推理能力差，幻觉问题严重的痛点设计并实现了基于 Adaptive-RAG 的多智能体电商客服系统。
-
-- **架构设计：** 基于 LangGraph 搭建核心状态机，规划器与执行器，统一接入 15 个核心工具，实现流式输出与指数退避+抖动重试；解析意图识别，采用 Prompt-template+DeepSeek v3 构建意图路由节点并通过 LLM 自主决策分解子任务并调用工具，自建 100 条测试 query 测试意图识别准确率达到 97%。
-
-- **检索阶段：** FAQ、退货策略、配送说明等文档进行预处理、切分、向量化索引。基于 Adaptive-RAG 实现科学感知的逻辑路由，动态调度检索策略，并通过问题改写和混合检索，解决多跳问题。
-
-- **检索优化：** 基于 Self-RAG 构建多轮检索策略，并利用 RRF 算法对多源异构检索结果进行融合与去重，随后调用 Cohere 模型进行重排序。
-
-  **Precision 58%→85%，Recall 63%→91%，Faithfulness 54%→88%，幻觉率下降 62%。**
-
-- **上下文压缩与记忆管理：** 针对长会话导致的 Token 冗余及成本问题，开发 128k Token 预算管理模块（滑动窗口 + 动态摘要）；实现 3 层压缩流水线，在上下文利用率在 50%~70% 时自动收紧工具结果体积，>85% 时触发 auto-compact，达到从轻量级截断到全量摘要逐级递进的渐进式压缩。
-
-- **Skill + MCP 的可插拔能力体系：** 支持按需加载退货处理、订单跟踪、商品推荐等标准化技能流程，并将本地工具与远程 MCP 工具统一为 Function Calling 接口。
-
-- **兜底与护栏机制：** 设计任务分解和工具执行层双向引入 Fallback 机制；部署查询边界、幻觉检测与自纠错重试机制，将幻觉率控制在 4% 以下。
-
-> **仓库实现说明：** 上述文字按简历原文展示。当前代码未接入 Cohere API，实际使用轻量级 `BAAI/bge-small-zh-v1.5` 做向量检索、本地 `BAAI/bge-reranker-base` 做精排；所列简历指标与仓库的[实测报告](eval/MEASURED.md)口径不同。Cohere Rerank 试用 API 密钥有免费限额，正式 API 使用按量收费，详见 [Cohere 定价说明](https://cohere.com/pricing)。
 
 <a id="docs"></a>
 
