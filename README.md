@@ -11,16 +11,6 @@
   <img alt="Python 3.11+" src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white">
   <img alt="FastAPI" src="https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi&logoColor=white">
   <img alt="React and TypeScript" src="https://img.shields.io/badge/Web-React%20%2B%20TypeScript-149eca?logo=react&logoColor=white">
-</p>
-
-<p align="center">
-  <a href="#why">和玩具 RAG 的区别</a> · <a href="#overview">项目亮点</a> ·
-  <a href="#resume">简历写法</a> ·
-  <a href="#quickstart">快速开始</a> · <a href="#architecture">系统架构</a> ·
-  <a href="#evaluation">实测结果</a> ·
-  <a href="#docs">完整文档</a> · <a href="#limitations">使用边界</a> ·
-  <a href="#roadmap">后续路线图</a>
-</p>
 
 ---
 
