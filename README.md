@@ -57,33 +57,50 @@
 
 ## 🚀 快速开始
 
-### Docker 一键启动
+### 🐳 Docker 部署
 
-已安装 Docker Desktop 时，在项目根目录执行：
+需要 Docker Desktop，并确保 Docker Desktop 使用 WSL 2 后端。以下命令均在项目根目录执行。
+
+#### 1. 默认演示
+
+适合快速体验，使用 SQLite、BM25 和内存缓存 / 向量库，不需要 PostgreSQL、Redis、Qdrant 或外部 API 密钥。
 
 ```powershell
 docker compose up --build -d
 ```
 
-启动后访问 **http://127.0.0.1:8000**，API 文档在 **http://127.0.0.1:8000/docs**。停止服务：
+#### 2. 单机生产
+
+使用 PostgreSQL、Redis 和单个 API 实例。先设置数据库密码：
 
 ```powershell
+$env:POSTGRES_PASSWORD="your-password"
+docker compose -f docker-compose.single.yml up --build -d
+```
+
+#### 3. 多实例生产
+
+使用 PostgreSQL、Redis、Qdrant、两个 API 实例和 Nginx 负载均衡：
+
+```powershell
+$env:POSTGRES_PASSWORD="your-password"
+docker compose -f docker-compose.multi.yml up --build -d
+```
+
+单机和多实例模式建议配置 `DEEPSEEK_API_KEY` 以启用生成式回答。启用本地 Embedding / Cross-Encoder 时，首次构建和启动可能下载模型，需要预留较大的磁盘和内存。
+
+启动后访问 **http://127.0.0.1:8000**；API 文档见 **http://127.0.0.1:8000/docs**；健康检查见 **http://127.0.0.1:8000/api/v1/health**。
+
+查看日志或停止服务：
+
+```powershell
+docker compose logs -f api
 docker compose down
 ```
 
-默认使用 SQLite 和内置词法检索，不需要 PostgreSQL、Redis、Qdrant 或外部 API 密钥。设置 `DEEPSEEK_API_KEY` 后可启用生成式回答，例如 PowerShell 中执行 `$env:DEEPSEEK_API_KEY="你的密钥"; docker compose up --build -d`。
+单机和多实例模式使用对应的 `-f` 参数执行 `logs` 和 `down`。没有 `DEEPSEEK_API_KEY` 时，系统使用离线证据回答；Redis、Qdrant、Embedding 或 Cross-Encoder 不可用时，会按代码中的降级策略继续运行。
 
-按部署规模选择 Compose 文件：
-
-| 模式 | 启动命令 | 适用场景 |
-|---|---|---|
-| 默认演示 | `docker compose up --build -d` | SQLite、内存缓存/向量，最快启动 |
-| 单机生产 | `docker compose -f docker-compose.single.yml up --build -d` | PostgreSQL、Redis、单个 API |
-| 多实例生产 | `docker compose -f docker-compose.multi.yml up --build -d` | PostgreSQL、Redis、Qdrant、双 API 实例和 Nginx |
-
-单机和多实例模式需要先设置 `POSTGRES_PASSWORD`，并建议配置 `DEEPSEEK_API_KEY`；启用本地 Embedding / Cross-Encoder 时首次构建和启动会下载模型，建议预留较大的磁盘和内存。
-
-默认使用 SQLite 和内存检索组件，不要求先部署 Redis 或 Qdrant。需要 **Python 3.11+**；Web 开发另需满足[前端 Node.js 要求](frontend/README.md)。
+不使用 Docker 时，需要 **Python 3.11+**；Web 开发另需满足[前端 Node.js 要求](frontend/README.md)。
 
 ### 1. 安装并启动 API
 
