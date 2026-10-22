@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <a href="#why">不只是 Demo</a> · <a href="#overview">项目亮点</a> ·
+  <a href="#why">和玩具 RAG 的区别</a> · <a href="#overview">项目亮点</a> ·
   <a href="#resume">简历写法</a> ·
   <a href="#quickstart">快速开始</a> · <a href="#architecture">系统架构</a> ·
   <a href="#evaluation">实测结果</a> ·
@@ -23,6 +23,12 @@
 </p>
 
 ---
+
+<p align="center">
+  <img src="docs/assets/frontend-snapshot.webp" alt="Adaptive RAG Web 工作台：多条件退货提问，回答附带三条政策来源引用" width="900">
+</p>
+
+<p align="center"><sub>Web 工作台：多条件退货提问，回答附带 <code>return_policy</code> 与 <code>return_electronics</code> 三条来源引用</sub></p>
 
 <a id="why"></a>
 
